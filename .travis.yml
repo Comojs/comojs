@@ -1,0 +1,5 @@
+language: c
+
+script:
+  - "perl ./scripts/make.pl -Dcomo_no_tls"
+  - "perl test.pl"
