@@ -22,8 +22,9 @@ find(sub {
 	}
 }, $testFolder);
 
+my $pid;
 if (!$ARGV[0] || $testFolder =~ /uv/){
-	my $pid = fork();
+	$pid = fork();
 	die "can't fork echo server" if $pid == -1;
 	if ($pid == 0){
 		my $ret = system($command . "tests/uv/echo-server.js");
@@ -57,7 +58,11 @@ for my $test (@tests){
 	}
 }
 
+#close echo server
+system($command . "tests/uv/echo-server.js --close");
+
 print "Done Testing " . scalar @tests . " files \n";
+
 if (@errors > 0){
 	print "With " . scalar @errors . " Error\n";
 	foreach my $err ( @errors ){

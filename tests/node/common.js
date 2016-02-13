@@ -9,7 +9,7 @@ var stream = require('stream');
 var util = require('util');
 
 
-exports.PORT = 8080;
+exports.PORT = 9089;
 exports.isWindows = process.platform === 'win32';
 exports.testDir = path.dirname(__filename);
 exports.fixturesDir = path.join(exports.testDir, 'fixtures');

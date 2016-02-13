@@ -11,6 +11,10 @@ function on_server_close (){
 
 }
 
+function on_close (){
+
+}
+
 function after_shutdown (){
 	this.close();
 	console.log("shutdown");
@@ -84,8 +88,7 @@ function on_connection(status) {
 	stream.server = this;
 
 	ASSERT(this.accept(stream) == 0);
-
-	console.log("client fd " + stream.fd);
+	// console.log("client fd " + stream.fd);
 	stream.read_start(after_read);
 }
 
@@ -114,4 +117,17 @@ function tcp_server (){
 
 	return 0;
 }
-tcp_server();
+
+
+if (process.argv[2] === '--close'){
+	var addr = uv.ip4_address("127.0.0.1", port);
+	var tcp_client = new uv.TCP();
+	tcp_client.connect(addr, function(e){
+		try {
+			this.write('Q', function(){});
+			this.close();
+		} catch (e){}
+	});
+} else {
+	tcp_server();
+}
