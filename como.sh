@@ -1,0 +1,1 @@
+tcc -Wunsupported -Wall -Wwrite-strings "./src/loop/core.c" "-run -I./libs -I./libs/mbedtls/library -I/media/sf_shared/tcc/include -L. -L./libs/duktape -lrt -lduktape -lmbedtls -lpthread" src/main.c $*

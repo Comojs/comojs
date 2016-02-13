@@ -1,0 +1,6 @@
+/ex/
+/plugins/
+*.exe
+*.dll
+*.so
+/back/

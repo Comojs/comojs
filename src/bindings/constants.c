@@ -1,0 +1,622 @@
+#include <errno.h>
+#if !defined(_MSC_VER)
+#include <unistd.h>
+#endif
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+static const duk_number_list_entry como_signal_constants[] = {
+	#ifdef SIGHUP
+		COMO_DEFINE_CONSTANT(SIGHUP)
+	#endif
+
+	#ifdef SIGINT
+		COMO_DEFINE_CONSTANT(SIGINT)
+	#endif
+
+	#ifdef SIGQUIT
+		COMO_DEFINE_CONSTANT(SIGQUIT)
+	#endif
+
+	#ifdef SIGILL
+		COMO_DEFINE_CONSTANT(SIGILL)
+	#endif
+
+	#ifdef SIGTRAP
+		COMO_DEFINE_CONSTANT(SIGTRAP)
+	#endif
+
+	#ifdef SIGABRT
+		COMO_DEFINE_CONSTANT(SIGABRT)
+	#endif
+
+	#ifdef SIGIOT
+		COMO_DEFINE_CONSTANT(SIGIOT)
+	#endif
+
+	#ifdef SIGBUS
+		COMO_DEFINE_CONSTANT(SIGBUS)
+	#endif
+
+	#ifdef SIGFPE
+		COMO_DEFINE_CONSTANT(SIGFPE)
+	#endif
+
+	#ifdef SIGKILL
+		COMO_DEFINE_CONSTANT(SIGKILL)
+	#endif
+
+	#ifdef SIGUSR1
+		COMO_DEFINE_CONSTANT(SIGUSR1)
+	#endif
+
+	#ifdef SIGSEGV
+		COMO_DEFINE_CONSTANT(SIGSEGV)
+	#endif
+
+	#ifdef SIGUSR2
+		COMO_DEFINE_CONSTANT(SIGUSR2)
+	#endif
+
+	#ifdef SIGPIPE
+		COMO_DEFINE_CONSTANT(SIGPIPE)
+	#endif
+
+	#ifdef SIGALRM
+		COMO_DEFINE_CONSTANT(SIGALRM)
+	#endif
+
+	COMO_DEFINE_CONSTANT(SIGTERM)
+
+	#ifdef SIGCHLD
+		COMO_DEFINE_CONSTANT(SIGCHLD)
+	#endif
+
+	#ifdef SIGSTKFLT
+		COMO_DEFINE_CONSTANT(SIGSTKFLT)
+	#endif
+
+	#ifdef SIGCONT
+		COMO_DEFINE_CONSTANT(SIGCONT)
+	#endif
+
+	#ifdef SIGSTOP
+		COMO_DEFINE_CONSTANT(SIGSTOP)
+	#endif
+
+	#ifdef SIGTSTP
+		COMO_DEFINE_CONSTANT(SIGTSTP)
+	#endif
+
+	#ifdef SIGBREAK
+		COMO_DEFINE_CONSTANT(SIGBREAK)
+	#endif
+
+	#ifdef SIGTTIN
+		COMO_DEFINE_CONSTANT(SIGTTIN)
+	#endif
+
+	#ifdef SIGTTOU
+		COMO_DEFINE_CONSTANT(SIGTTOU)
+	#endif
+
+	#ifdef SIGURG
+		COMO_DEFINE_CONSTANT(SIGURG)
+	#endif
+
+	#ifdef SIGXCPU
+		COMO_DEFINE_CONSTANT(SIGXCPU)
+	#endif
+
+	#ifdef SIGXFSZ
+		COMO_DEFINE_CONSTANT(SIGXFSZ)
+	#endif
+
+	#ifdef SIGVTALRM
+		COMO_DEFINE_CONSTANT(SIGVTALRM)
+	#endif
+
+	#ifdef SIGPROF
+		COMO_DEFINE_CONSTANT(SIGPROF)
+	#endif
+
+	#ifdef SIGWINCH
+		COMO_DEFINE_CONSTANT(SIGWINCH)
+	#endif
+
+	#ifdef SIGIO
+		COMO_DEFINE_CONSTANT(SIGIO)
+	#endif
+
+	#ifdef SIGPOLL
+		COMO_DEFINE_CONSTANT(SIGPOLL)
+	#endif
+
+	#ifdef SIGLOST
+		COMO_DEFINE_CONSTANT(SIGLOST)
+	#endif
+
+	#ifdef SIGPWR
+		COMO_DEFINE_CONSTANT(SIGPWR)
+	#endif
+
+	#ifdef SIGSYS
+		COMO_DEFINE_CONSTANT(SIGSYS)
+	#endif
+
+	#ifdef SIGUNUSED
+		COMO_DEFINE_CONSTANT(SIGUNUSED)
+	#endif
+	{NULL, 0}
+};
+
+
+// errno constants
+static const duk_number_list_entry como_errno_constants[] = {
+	#ifdef E2BIG
+		COMO_DEFINE_CONSTANT(E2BIG)
+	#endif
+
+	#ifdef EACCES
+		COMO_DEFINE_CONSTANT(EACCES)
+	#endif
+
+	#ifdef EADDRINUSE
+		COMO_DEFINE_CONSTANT(EADDRINUSE)
+	#endif
+
+	#ifdef EADDRNOTAVAIL
+		COMO_DEFINE_CONSTANT(EADDRNOTAVAIL)
+	#endif
+
+	#ifdef EAFNOSUPPORT
+		COMO_DEFINE_CONSTANT(EAFNOSUPPORT)
+	#endif
+
+	#ifdef EAGAIN
+		COMO_DEFINE_CONSTANT(EAGAIN)
+	#endif
+
+	#ifdef EALREADY
+		COMO_DEFINE_CONSTANT(EALREADY)
+	#endif
+
+	#ifdef EBADF
+		COMO_DEFINE_CONSTANT(EBADF)
+	#endif
+
+	#ifdef EBADMSG
+		COMO_DEFINE_CONSTANT(EBADMSG)
+	#endif
+
+	#ifdef EBUSY
+		COMO_DEFINE_CONSTANT(EBUSY)
+	#endif
+
+	#ifdef ECANCELED
+		COMO_DEFINE_CONSTANT(ECANCELED)
+	#endif
+
+	#ifdef ECHILD
+		COMO_DEFINE_CONSTANT(ECHILD)
+	#endif
+
+	#ifdef ECONNABORTED
+		COMO_DEFINE_CONSTANT(ECONNABORTED)
+	#endif
+
+	#ifdef ECONNREFUSED
+		COMO_DEFINE_CONSTANT(ECONNREFUSED)
+	#endif
+
+	#ifdef ECONNRESET
+		COMO_DEFINE_CONSTANT(ECONNRESET)
+	#endif
+
+	#ifdef EDEADLK
+		COMO_DEFINE_CONSTANT(EDEADLK)
+	#endif
+
+	#ifdef EDESTADDRREQ
+		COMO_DEFINE_CONSTANT(EDESTADDRREQ)
+	#endif
+
+	#ifdef EDOM
+		COMO_DEFINE_CONSTANT(EDOM)
+	#endif
+
+	#ifdef EDQUOT
+		COMO_DEFINE_CONSTANT(EDQUOT)
+	#endif
+
+	#ifdef EEXIST
+		COMO_DEFINE_CONSTANT(EEXIST)
+	#endif
+
+	#ifdef EFAULT
+		COMO_DEFINE_CONSTANT(EFAULT)
+	#endif
+
+	#ifdef EFBIG
+		COMO_DEFINE_CONSTANT(EFBIG)
+	#endif
+
+	#ifdef EHOSTUNREACH
+		COMO_DEFINE_CONSTANT(EHOSTUNREACH)
+	#endif
+
+	#ifdef EIDRM
+		COMO_DEFINE_CONSTANT(EIDRM)
+	#endif
+
+	#ifdef EILSEQ
+		COMO_DEFINE_CONSTANT(EILSEQ)
+	#endif
+
+	#ifdef EINPROGRESS
+		COMO_DEFINE_CONSTANT(EINPROGRESS)
+	#endif
+
+	#ifdef EINTR
+		COMO_DEFINE_CONSTANT(EINTR)
+	#endif
+
+	#ifdef EINVAL
+		COMO_DEFINE_CONSTANT(EINVAL)
+	#endif
+
+	#ifdef EIO
+		COMO_DEFINE_CONSTANT(EIO)
+	#endif
+
+	#ifdef EISCONN
+		COMO_DEFINE_CONSTANT(EISCONN)
+	#endif
+
+	#ifdef EISDIR
+		COMO_DEFINE_CONSTANT(EISDIR)
+	#endif
+
+	#ifdef ELOOP
+		COMO_DEFINE_CONSTANT(ELOOP)
+	#endif
+
+	#ifdef EMFILE
+		COMO_DEFINE_CONSTANT(EMFILE)
+	#endif
+
+	#ifdef EMLINK
+		COMO_DEFINE_CONSTANT(EMLINK)
+	#endif
+
+	#ifdef EMSGSIZE
+		COMO_DEFINE_CONSTANT(EMSGSIZE)
+	#endif
+
+	#ifdef EMULTIHOP
+		COMO_DEFINE_CONSTANT(EMULTIHOP)
+	#endif
+
+	#ifdef ENAMETOOLONG
+		COMO_DEFINE_CONSTANT(ENAMETOOLONG)
+	#endif
+
+	#ifdef ENETDOWN
+		COMO_DEFINE_CONSTANT(ENETDOWN)
+	#endif
+
+	#ifdef ENETRESET
+		COMO_DEFINE_CONSTANT(ENETRESET)
+	#endif
+
+	#ifdef ENETUNREACH
+		COMO_DEFINE_CONSTANT(ENETUNREACH)
+	#endif
+
+	#ifdef ENFILE
+		COMO_DEFINE_CONSTANT(ENFILE)
+	#endif
+
+	#ifdef ENOBUFS
+		COMO_DEFINE_CONSTANT(ENOBUFS)
+	#endif
+
+	#ifdef ENODATA
+		COMO_DEFINE_CONSTANT(ENODATA)
+	#endif
+
+	#ifdef ENODEV
+		COMO_DEFINE_CONSTANT(ENODEV)
+	#endif
+
+	#ifdef ENOENT
+		COMO_DEFINE_CONSTANT(ENOENT)
+	#endif
+
+	#ifdef ENOEXEC
+		COMO_DEFINE_CONSTANT(ENOEXEC)
+	#endif
+
+	#ifdef ENOLCK
+		COMO_DEFINE_CONSTANT(ENOLCK)
+	#endif
+
+	#ifdef ENOLINK
+		COMO_DEFINE_CONSTANT(ENOLINK)
+	#endif
+
+	#ifdef ENOMEM
+		COMO_DEFINE_CONSTANT(ENOMEM)
+	#endif
+
+	#ifdef ENOMSG
+		COMO_DEFINE_CONSTANT(ENOMSG)
+	#endif
+
+	#ifdef ENOPROTOOPT
+		COMO_DEFINE_CONSTANT(ENOPROTOOPT)
+	#endif
+
+	#ifdef ENOSPC
+		COMO_DEFINE_CONSTANT(ENOSPC)
+	#endif
+
+	#ifdef ENOSR
+		COMO_DEFINE_CONSTANT(ENOSR)
+	#endif
+
+	#ifdef ENOSTR
+		COMO_DEFINE_CONSTANT(ENOSTR)
+	#endif
+
+	#ifdef ENOSYS
+		COMO_DEFINE_CONSTANT(ENOSYS)
+	#endif
+
+	#ifdef ENOTCONN
+		COMO_DEFINE_CONSTANT(ENOTCONN)
+	#endif
+
+	#ifdef ENOTDIR
+		COMO_DEFINE_CONSTANT(ENOTDIR)
+	#endif
+
+	#ifdef ENOTEMPTY
+		COMO_DEFINE_CONSTANT(ENOTEMPTY)
+	#endif
+
+	#ifdef ENOTSOCK
+		COMO_DEFINE_CONSTANT(ENOTSOCK)
+	#endif
+
+	#ifdef ENOTSUP
+		COMO_DEFINE_CONSTANT(ENOTSUP)
+	#endif
+
+	#ifdef ENOTTY
+		COMO_DEFINE_CONSTANT(ENOTTY)
+	#endif
+
+	#ifdef ENXIO
+		COMO_DEFINE_CONSTANT(ENXIO)
+	#endif
+
+	#ifdef EOPNOTSUPP
+		COMO_DEFINE_CONSTANT(EOPNOTSUPP)
+	#endif
+
+	#ifdef EOVERFLOW
+		COMO_DEFINE_CONSTANT(EOVERFLOW)
+	#endif
+
+	#ifdef EPERM
+		COMO_DEFINE_CONSTANT(EPERM)
+	#endif
+
+	#ifdef EPIPE
+		COMO_DEFINE_CONSTANT(EPIPE)
+	#endif
+
+	#ifdef EPROTO
+		COMO_DEFINE_CONSTANT(EPROTO)
+	#endif
+
+	#ifdef EPROTONOSUPPORT
+		COMO_DEFINE_CONSTANT(EPROTONOSUPPORT)
+	#endif
+
+	#ifdef EPROTOTYPE
+		COMO_DEFINE_CONSTANT(EPROTOTYPE)
+	#endif
+
+	#ifdef ERANGE
+		COMO_DEFINE_CONSTANT(ERANGE)
+	#endif
+
+	#ifdef EROFS
+		COMO_DEFINE_CONSTANT(EROFS)
+	#endif
+
+	#ifdef ESPIPE
+		COMO_DEFINE_CONSTANT(ESPIPE)
+	#endif
+
+	#ifdef ESRCH
+		COMO_DEFINE_CONSTANT(ESRCH)
+	#endif
+
+	#ifdef ESTALE
+		COMO_DEFINE_CONSTANT(ESTALE)
+	#endif
+
+	#ifdef ETIME
+		COMO_DEFINE_CONSTANT(ETIME)
+	#endif
+
+	#ifdef ETIMEDOUT
+		COMO_DEFINE_CONSTANT(ETIMEDOUT)
+	#endif
+
+	#ifdef ETXTBSY
+		COMO_DEFINE_CONSTANT(ETXTBSY)
+	#endif
+
+	#ifdef EWOULDBLOCK
+		COMO_DEFINE_CONSTANT(EWOULDBLOCK)
+	#endif
+
+	#ifdef EXDEV
+		COMO_DEFINE_CONSTANT(EXDEV)
+	#endif
+	{NULL, 0}
+};
+
+
+static const duk_number_list_entry como_sys_constants[] = {
+	COMO_DEFINE_CONSTANT(O_RDONLY)
+	COMO_DEFINE_CONSTANT(O_WRONLY)
+	COMO_DEFINE_CONSTANT(O_RDWR)
+
+	COMO_DEFINE_CONSTANT(S_IFMT)
+	COMO_DEFINE_CONSTANT(S_IFREG)
+	COMO_DEFINE_CONSTANT(S_IFDIR)
+	COMO_DEFINE_CONSTANT(S_IFCHR)
+	#ifdef S_IFBLK
+		COMO_DEFINE_CONSTANT(S_IFBLK)
+	#endif
+
+	#ifdef S_IFIFO
+		COMO_DEFINE_CONSTANT(S_IFIFO)
+	#endif
+
+	#ifdef S_IFLNK
+		COMO_DEFINE_CONSTANT(S_IFLNK)
+	#endif
+
+	#ifdef S_IFSOCK
+		COMO_DEFINE_CONSTANT(S_IFSOCK)
+	#endif
+
+	#ifdef O_CREAT
+		COMO_DEFINE_CONSTANT(O_CREAT)
+	#endif
+
+	#ifdef O_EXCL
+		COMO_DEFINE_CONSTANT(O_EXCL)
+	#endif
+
+	#ifdef O_NOCTTY
+		COMO_DEFINE_CONSTANT(O_NOCTTY)
+	#endif
+
+	#ifdef O_TRUNC
+		COMO_DEFINE_CONSTANT(O_TRUNC)
+	#endif
+
+	#ifdef O_APPEND
+		COMO_DEFINE_CONSTANT(O_APPEND)
+	#endif
+
+	#ifdef O_DIRECTORY
+		COMO_DEFINE_CONSTANT(O_DIRECTORY)
+	#endif
+
+	#ifdef O_EXCL
+		COMO_DEFINE_CONSTANT(O_EXCL)
+	#endif
+
+	#ifdef O_NOFOLLOW
+		COMO_DEFINE_CONSTANT(O_NOFOLLOW)
+	#endif
+
+	#ifdef O_SYNC
+		COMO_DEFINE_CONSTANT(O_SYNC)
+	#endif
+
+	#ifdef O_SYMLINK
+		COMO_DEFINE_CONSTANT(O_SYMLINK)
+	#endif
+
+	#ifdef O_DIRECT
+		COMO_DEFINE_CONSTANT(O_DIRECT)
+	#endif
+
+	#ifdef O_NONBLOCK
+		COMO_DEFINE_CONSTANT(O_NONBLOCK)
+	#endif
+
+	#ifdef S_IRWXU
+		COMO_DEFINE_CONSTANT(S_IRWXU)
+	#endif
+
+	#ifdef S_IRUSR
+		COMO_DEFINE_CONSTANT(S_IRUSR)
+	#endif
+
+	#ifdef S_IWUSR
+		COMO_DEFINE_CONSTANT(S_IWUSR)
+	#endif
+
+	#ifdef S_IXUSR
+		COMO_DEFINE_CONSTANT(S_IXUSR)
+	#endif
+
+	#ifdef S_IRWXG
+		COMO_DEFINE_CONSTANT(S_IRWXG)
+	#endif
+
+	#ifdef S_IRGRP
+		COMO_DEFINE_CONSTANT(S_IRGRP)
+	#endif
+
+	#ifdef S_IWGRP
+		COMO_DEFINE_CONSTANT(S_IWGRP)
+	#endif
+
+	#ifdef S_IXGRP
+		COMO_DEFINE_CONSTANT(S_IXGRP)
+	#endif
+
+	#ifdef S_IRWXO
+		COMO_DEFINE_CONSTANT(S_IRWXO)
+	#endif
+
+	#ifdef S_IROTH
+		COMO_DEFINE_CONSTANT(S_IROTH)
+	#endif
+
+	#ifdef S_IWOTH
+		COMO_DEFINE_CONSTANT(S_IWOTH)
+	#endif
+
+	#ifdef S_IXOTH
+		COMO_DEFINE_CONSTANT(S_IXOTH)
+	#endif
+
+	#ifdef F_OK
+		COMO_DEFINE_CONSTANT(F_OK)
+	#endif
+
+	#ifdef R_OK
+		COMO_DEFINE_CONSTANT(R_OK)
+	#endif
+
+	#ifdef W_OK
+		COMO_DEFINE_CONSTANT(W_OK)
+	#endif
+
+	#ifdef X_OK
+		COMO_DEFINE_CONSTANT(X_OK)
+	#endif
+	{NULL, 0}
+};
+
+static int init_system_constants(duk_context *ctx) {
+	duk_push_object(ctx);
+	duk_put_number_list(ctx, -1, como_signal_constants);
+	duk_put_number_list(ctx, -1, como_errno_constants);
+	duk_put_number_list(ctx, -1, como_sys_constants);
+	return 1;
+}
