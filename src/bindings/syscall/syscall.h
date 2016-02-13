@@ -7,7 +7,7 @@
 	if (type == DUK_TYPE_STRING){                                     \
 		arg##ix = (char *)duk_get_string(ctx, argnum);                \
 	} else if (type == DUK_TYPE_NUMBER){                              \
-		arg##ix = (void *)(duk_uintptr_t)duk_get_number(ctx, argnum); \
+		arg##ix = (void *)(duk_intptr_t)duk_get_number(ctx, argnum);  \
 	} else if (type == DUK_TYPE_NULL) {                               \
 		arg##ix = NULL;                                               \
 	}  else {                                                         \

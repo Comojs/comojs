@@ -19,13 +19,13 @@ var testStruct = struct.create({
 	p          : ttt,
 	buf        :  8, /* bytes */
 	p2         : 'testtestStruct',
-	pnum       : 4
+	pnum       : 8
 });
 
-var st  = new testStruct();
 
-for (var i = 0; i < 100; i++){
 
+for (var i = 0; i < 10; i++){
+	var st  = new testStruct();
 	st.buf = "hello77\0";
 	st.testNum = 9;
 	st.p.test  = 10;
