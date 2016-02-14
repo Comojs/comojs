@@ -1,4 +1,4 @@
-'use strict';
+// 'use strict';
 var common = require('../common');
 var assert = require('assert');
 var join = require('path').join;
@@ -52,14 +52,14 @@ assert.equal(buf.length + currentFileData.length, fileData3.length);
 var filename4 = join(common.tmpDir, 'append-sync4.txt');
 fs.writeFileSync(filename4, currentFileData, { mode: m });
 
-var m = 448;
+var m = 0600;
 fs.appendFileSync(filename4, num, { mode: m });
 
 // windows permissions aren't unix
 if (!common.isWindows) {
   var st = fs.statSync(filename4);
   console.log(st.mode);
-  assert.equal(st.mode & 448, m);
+  assert.equal(st.mode & 0700, m);
 }
 
 var fileData4 = fs.readFileSync(filename4);
@@ -71,7 +71,7 @@ assert.equal(Buffer.byteLength('' + num) + currentFileData.length,
 var filename5 = join(common.tmpDir, 'append-sync5.txt');
 fs.writeFileSync(filename5, currentFileData);
 
-var filename5fd = fs.openSync(filename5, 'a+', 384);
+var filename5fd = fs.openSync(filename5, 'a+', 0600);
 fs.appendFileSync(filename5fd, data);
 fs.closeSync(filename5fd);
 

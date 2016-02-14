@@ -15,10 +15,9 @@ exports.setupBufferJS = function(proto, obj){
 	proto.utf8Slice    = binding.utf8Slice;
 	proto.ucs2Slice    = binding.ucs2Slice;
 
-	// proto.ucs2Slice  = ucs2Slice;
-	proto.utf8Slice    = function(s,e){
-		return NODE_BUFFER.prototype.toString.call(this, 'utf8', s, e);
-	};
+	// proto.utf8Slice    = function(s,e){
+	// 	return NODE_BUFFER.prototype.toString.call(this, 'utf8', s, e);
+	// };
 
 	proto.hexWrite = binding.hexWrite;
 	proto.utf8Write = binding.utf8Write;

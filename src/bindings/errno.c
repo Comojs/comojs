@@ -418,6 +418,10 @@ static const duk_number_list_entry como_errno_errors[] = {
         COMO_DEFINE_CONSTANT(EWOULDBLOCK)
     #endif
 
+    #ifdef ESOCKTNOSUPPORT
+        COMO_DEFINE_CONSTANT(ESOCKTNOSUPPORT)
+    #endif
+
     #ifdef EXDEV
         COMO_DEFINE_CONSTANT(EXDEV)
     #endif

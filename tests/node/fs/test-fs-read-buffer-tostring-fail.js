@@ -21,7 +21,7 @@ var stream = fs.createWriteStream(file, {
   flags: 'a'
 });
 
-var size = kStringMaxLength / 200000; //should be 200
+var size = kStringMaxLength / 200; //should be 200
 var a = Buffer(size)
 a.fill('a');
 
@@ -34,10 +34,8 @@ stream.on('finish', common.mustCall(function() {
   console.log('finished writing');
   fd = fs.openSync(file, 'r');
   fs.read(fd, kStringMaxLength + 1, 0, 'utf8', common.mustCall(function(err, buf) {
-    // console.log(buf.length);
-    assert.equal(buf.length, 269742);
-    // assert.ok(err instanceof Error);
-    // assert.strictEqual('"toString()" failed', err.message);
+    assert.ok(err instanceof Error);
+    assert.strictEqual('"toString()" failed', err.message);
   }));
 }));
 

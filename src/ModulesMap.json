@@ -53,6 +53,7 @@
 	"_stream_passthrough" : "js/node/stream/_stream_passthrough.js",
 
 	"timer_wrap"          : "js/node_wrap/timer_wrap.js",
+	"buffer_wrap"          : "js/node_wrap/buffer_wrap.js",
 	"handle_wrap"         : "js/node_wrap/handle_wrap.js",
 	"tcp_wrap"            : "js/node_wrap/tcp_wrap.js",
 	"stream_wrap"         : "js/node_wrap/stream_wrap.js",

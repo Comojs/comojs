@@ -18,17 +18,17 @@ exports.FSInitialize = function(fn){
 	statFunction = fn;
 };
 
+
 exports.open = function(file, flags, mode, req){
 	var err = null;
 	var fd = posix.open(file, flags, mode);
 	if (fd === null){
 		err = _throw(process.errno, 'open', file);
 	} else {
-		//TODO implement from syscall module
-		// var closefd = isWin ? sys.GetOsFHandle(fd) : fd;
-		// if (!sys.cloexec(closefd, 1)){
-		//     err = _throw(process.errno, 'open', file);
-		// }
+		var closefd = isWin ? syscall.GetFdHandle(fd) : fd;
+		if (!syscall.cloexec(closefd, 1)){
+		    err = _throw(process.errno, 'open', file);
+		}
 	}
 
 	if (req){
@@ -41,6 +41,7 @@ exports.open = function(file, flags, mode, req){
 	if (err) throw(err);
 	return fd;
 };
+
 
 exports.read = function(fd, buffer, offset, length, position, req){
 	offset = offset || 0;
@@ -62,6 +63,7 @@ exports.read = function(fd, buffer, offset, length, position, req){
 	if (err) throw err;
 	return nread;
 };
+
 
 exports.writeBuffers = function(fd, chunks, pos, req){
 	if (req){
@@ -89,6 +91,7 @@ exports.writeBuffers = function(fd, chunks, pos, req){
 		exports.writeBuffer(fd, chunk, 0, chunk.byteLength, pos);
 	});
 };
+
 
 exports.writeBuffer = exports.writeString = function(fd, data, offset, length, position, req){
 	var err;
@@ -135,12 +138,14 @@ exports.writeBuffer = exports.writeString = function(fd, data, offset, length, p
 	return nwritten;
 };
 
+
 function _normalizePath (args){
 	if (typeof args[0] === 'string'){
 	args[0] = args[0].replace(/^\\\\\?\\/, '');
 	}
 	return args;
 }
+
 
 function _normalizeLinkArgs (args) {
 	//src => args[0]
@@ -159,12 +164,14 @@ function _normalizeLinkArgs (args) {
 	return args;
 }
 
+
 function _checkAccessArgs (args){
 	 if (!util.isString(args[0])){
 		throw new Error("path must be a string");
 	}
 	return args;
 }
+
 
 [
 	['close', 2],
@@ -215,6 +222,7 @@ function _checkAccessArgs (args){
 });
 
 exports.fdatasync = exports.fsync;
+
 
 //stat functions
 ['lstat', 'fstat', 'stat'].forEach(function(fn){
