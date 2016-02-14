@@ -4,11 +4,14 @@
 static const unsigned int kMaxLength =
 	sizeof(duk_int32_t) == sizeof(duk_intptr_t) ? 0x3fffffff : 0x7fffffff;
 
+#define kStringMaxLength (kMaxLength & 0xffffff0)
+
 #if !defined(MIN)
 	#define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define CHECK_NOT_OOB(r)                                                    \
+
+#	define CHECK_NOT_OOB(r)                                                 \
 do {                                                                        \
 	if (!(r)) duk_error(ctx, DUK_ERR_RANGE_ERROR, "out of range index");    \
 } while (0)
@@ -213,6 +216,7 @@ COMO_METHOD(como_buffer_compare) {
   if (end < start) end = start;                                             \
   CHECK_NOT_OOB(end <= end_max);                                            \
   size_t length = end - start;                                              \
+  if (length > kStringMaxLength) { duk_push_undefined(ctx); return 1; }         \
   src += start;                                                             \
   if (length == 0) { duk_push_string(ctx, ""); return 1; }
 
@@ -880,7 +884,7 @@ static int init_binding_buffer(duk_context *ctx) {
 	duk_push_number(ctx, kMaxLength);
 	duk_put_prop_string(ctx, -2, "kMaxLength");
 
-	duk_push_number(ctx, kMaxLength / 4);
+	duk_push_number(ctx, kStringMaxLength);
 	duk_put_prop_string(ctx, -2, "kStringMaxLength");
 
 	duk_put_function_list(ctx, -1, como_buffer_funcs);
