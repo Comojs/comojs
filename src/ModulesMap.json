@@ -3,6 +3,7 @@
 	"loop"                : "js/loop.js",
 	"struct"              : "js/struct.js",
 
+	"C"                   : "js/C.js",
 	"syscall"             : "js/syscall/index.js",
 	"syscall/linux"       : "js/syscall/linux.js",
 	"syscall/windows"     : "js/syscall/windows.js",
