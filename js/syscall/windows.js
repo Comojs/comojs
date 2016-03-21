@@ -1,12 +1,13 @@
 module.exports = (function(platform){
 	var binding = process.binding('syscall');
-	var types   = process.binding('types');
 	var struct  = require('struct');
 	var assert  = require('assert');
 	var errno   = require('errno');
+	var C       = require('C');
+	var sock    = require('sockets');
 	// var utf16   = require('../go/unicode/utf16');
 
-	exports = platform.exports;
+	var syscall = exports = platform.exports;
 
 	{	// Invented values to support what package os expects.
 		var O_RDONLY   = exports.O_RDONLY   = 0x00000;
@@ -260,6 +261,9 @@ module.exports = (function(platform){
 	exports.WSADuplicateSocket = ws2.GetProcAddress('WSADuplicateSocketW', -1, 3);
 	exports.WSASocket = ws2.GetProcAddress('WSASocketW');
 	exports.WSAGetLastError = ws2.GetProcAddress('WSAGetLastError');
+
+	exports.getaddrinfo   = ws2.GetProcAddress('getaddrinfo', null, 4);
+	exports.freeaddrinfo  = ws2.GetProcAddress('freeaddrinfo');
 
 	GetLastError     = kernel.GetProcAddress('GetLastError');
 

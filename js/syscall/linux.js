@@ -61,6 +61,8 @@ module.exports = (function(platform){
     var open  = libc.GetProcAddress('open', -1, 3);
     var getuid = libc.GetProcAddress('getuid', -1, 0);
     var setuid = libc.GetProcAddress('setuid', -1, 1);
+    var getaddrinfo   = libc.GetProcAddress('getaddrinfo');
+    var freeaddrinfo   = libc.GetProcAddress('freeaddrinfo');
 
 	var pipe2;
 	try {
@@ -85,6 +87,8 @@ module.exports = (function(platform){
 	  exports.setsid = setsid;
 	  exports.setuid = setuid;
 	  exports.getuid = getuid;
+	  exports.getaddrinfo = getaddrinfo;
+	  exports.freeaddrinfo = freeaddrinfo;
 	//===========================================================
 
 	// cloexec

@@ -59,8 +59,8 @@ function create_struct_fields(fields){
 	for (var key in fields){
 		var type = fields[key];
 		var size   = type.size;
-		var offset = type.offset;
-		var set = type.fn;
+		var offset = structSize;
+		var set    = type.fn;
 
 		// localize field offset & size
 		(function(set, off, size){

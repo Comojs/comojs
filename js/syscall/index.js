@@ -1,6 +1,6 @@
 var binding = process.binding('syscall');
-var types   = process.binding('types');
 var errno   = require('errno');
+var C       = require('C');
 
 var _LoadedLib = {};
 var littleEndian = (function() {
@@ -50,11 +50,14 @@ function NewLoadLibrary (h){
 	};
 }
 
+
 // load WINAPI Library
 // var lib = syscall.LoadLibrary('kernel32');
 // var ReadFile = lib.GetProcAddress('ReadFile');
 // ReadFile( ..args.. );
-exports.LoadLibrary = function (lib){
+//===========================================================
+  exports.LoadLibrary = function (lib){
+//===========================================================
 	if (_LoadedLib[lib]) {
 		return _LoadedLib[lib];
 	}
@@ -70,9 +73,68 @@ exports.LoadLibrary = function (lib){
 
 
 var platform = process.platform;
-
 if (platform === 'win32'){
 	require('syscall/windows')(module);
 } else {
 	require('syscall/linux')(module);
 }
+
+
+function IPv4(a1, a2, a3, a4){
+	return [a1, a2, a3, a4].join(':');
+}
+
+//===========================================================
+  exports.LookupIP = function(name) {
+//===========================================================
+	var hints = new C.Struct.addrinfo();
+	var syscall = require('sockets');
+	//set hints
+	hints.ai_family   = syscall.AF_UNSPEC;
+	hints.ai_socktype = syscall.SOCK_STREAM;
+	hints.ai_protocol = syscall.IPPROTO_IP;
+
+	var result = C.void();
+	// name = UTF16PtrFromString(name);
+
+	var e = exports.getaddrinfo(name, null, hints, result);
+	if (e !== 0){
+		throw new Error(e);
+	}
+
+	// if e != nil {
+	// 	return nil, &DNSError{Err: os.NewSyscallError("getaddrinfow", e).Error(), Name: name}
+	// }
+
+	// get pointer address stored in result buffer
+	var freePTR = result.ptr;
+	result = freePTR;
+	var addrs = [];
+
+	var info = new C.Struct.addrinfo(result);
+	while (result !== null){
+		var info = new C.Struct.addrinfo(result);
+		result = info.ai_next;
+		switch (info.ai_family){
+			case syscall.AF_INET : {
+				var addr = new C.Struct.sockaddr(info.ai_addr);
+				var a    = addr.buffer.sin_addr;
+				addrs.push(IPv4(a[0], a[1], a[2], a[3]));
+				break;
+			}
+
+			case syscall.AF_INET6 : {
+				console.log(info);
+				var addr = new C.Struct.sockaddr6(info.ai_addr);
+				var a    = addr.Buffer('sin6_addr');
+				console.log(a);
+				throw new Error('inet6 : not implemented');
+			}
+
+			default : throw new Error('unknown family type');
+		}
+	}
+
+	exports.freeaddrinfo(freePTR);
+	return addrs;
+};

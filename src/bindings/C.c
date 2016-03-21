@@ -70,7 +70,7 @@ COMO_METHOD(como_c_pointer) {
 	duk_uint8_t *buf = duk_require_buffer_data(ctx, 0, NULL);
 	int offset = duk_get_int(ctx, 1);
 
-	//get pointer value stored in buffer at offset
+	// get pointer value stored in buffer at offset
 	if (duk_is_undefined(ctx, 3)){
 		duk_uintptr_t nr = *((duk_uintptr_t*)&buf[offset]);
 		if (nr == 0){
@@ -80,7 +80,7 @@ COMO_METHOD(como_c_pointer) {
 			duk_push_pointer(ctx, (void *)(duk_uintptr_t)nr);
 		}
 	}
-	//set pointer value in buffer at offset
+	// set pointer value in buffer at offset
 	else {
 		return 1;
 		char *value = duk_require_buffer_data(ctx, 2, NULL);
@@ -169,7 +169,7 @@ COMO_METHOD(como_struct_sockaddr6) {
 static const duk_function_list_entry como_C_funcs[] = {
 	{"copy_buffer_data", como_c_copy_data,       2},
 	{"pointer", como_c_pointer,                  4},
-	{"int", como_c_int,                         4},
+	{"int", como_c_int,                          4},
 	{"int8", como_c_int8,                        4},
 	{"int16", como_c_int16,                      4},
 	{"int32", como_c_int32,                      4},
