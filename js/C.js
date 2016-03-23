@@ -9,7 +9,7 @@ C.LE = (function() {
 	return new Int16Array(buffer)[0] === 256;
 })();
 
-var types = {
+var _typesMap = {
 	uint8 : {
 		fn   : C.uint8,
 		size : C.sizeOf.int8
@@ -59,7 +59,7 @@ function create_struct_fields(fields){
 	for (var key in fields){
 		var type = fields[key];
 		var size   = type.size;
-		var offset = structSize;
+		var offset = type.offset;
 		var set    = type.fn;
 
 		// localize field offset & size
@@ -113,20 +113,24 @@ function normalize_fields(fields){
 	Object.keys(fields).forEach(function(name) {
 		var type = fields[name];
 		if (typeof type === 'string'){
-			fields[name] = types[type] || throwField(type);
-			fields[name].offset = offset;
+			var clone = _typesMap[type];
+			if (!clone) throwField(type);
+			fields[name] = {
+				fn     : clone.fn,
+				size   : clone.size,
+				offset : offset
+			};
 			offset += fields[name].size;
 		}
 		else { // object, most likely passed by C struct
 			fields[name] = (function(){
 				var obj = fields[name];
-				obj.fn  = types[obj.type] ? types[obj.type].fn : throwField(obj.type);
+				obj.fn  = _typesMap[obj.type] ? _typesMap[obj.type].fn : throwField(obj.type);
 				delete obj.type;
 				return obj;
 			})();
 		}
 	});
-
 	return fields;
 }
 
