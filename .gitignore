@@ -4,3 +4,4 @@
 *.dll
 *.so
 /back/
+*.sublime*

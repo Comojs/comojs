@@ -84,7 +84,6 @@ COMO_METHOD(como_syscall_pointerToBuffer){
 	/* save structure address at buffer offset buf[offset] = struct address; */
 	void **p1 = (void *)&buf[offset];
 	void **p2 = (void *)&st;
-	// *p1 = *p2;
 	*((duk_uintptr_t *)p1) = *((duk_uintptr_t *)p2);
 	return 1;
 }

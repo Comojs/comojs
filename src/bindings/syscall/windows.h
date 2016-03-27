@@ -14,9 +14,13 @@
 //===========================================================
 
 COMO_METHOD(como_syscall_LoadLibrary) {
-	const char *lib = duk_require_string(ctx, 0);
 	HINSTANCE hinst;
-	hinst = LoadLibrary((LPCTSTR)lib);
+	if (duk_is_null(ctx, 0)){
+		hinst = LoadLibrary(NULL);
+	} else {
+		const char *lib = duk_require_string(ctx, 0);
+		hinst = LoadLibrary((LPCTSTR)lib);
+	}
 
 	if (hinst == NULL){
 		COMO_SET_ERRNO_AND_RETURN(ctx, GetLastError());
