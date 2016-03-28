@@ -4,7 +4,6 @@ module.exports = (function(platform){
 	var assert  = require('assert');
 	var errno   = require('errno');
 	var C       = require('C');
-	var sock    = require('sockets');
 	// var utf16   = require('../go/unicode/utf16');
 
 	var syscall = exports = platform.exports;

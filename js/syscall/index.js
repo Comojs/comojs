@@ -1,6 +1,16 @@
 var binding = process.binding('syscall');
 var errno   = require('errno');
 var C       = require('C');
+var sock    = require('socket');
+var syscall = exports;
+
+{	// shared constants
+	syscall.AF_UNSPEC   = sock.AF_UNSPEC;
+	syscall.SOCK_STREAM = sock.SOCK_STREAM;
+	syscall.IPPROTO_IP  = sock.IPPROTO_IP;
+	syscall.AF_INET     = sock.AF_INET;
+	syscall.AF_INET6    = sock.AF_INET6;
+}
 
 var _LoadedLib = {};
 var littleEndian = (function() {
@@ -40,7 +50,7 @@ function NewLoadLibrary (h){
 			var r = retVal.getInt32(0, littleEndian);
 			if (typeof errval !== 'undefined'){
 				if (r === errval){
-					process.errno = exports.GetLastError() || errno.EINVAL;
+					process.errno = syscall.GetLastError() || errno.EINVAL;
 					return null;
 				}
 			}
@@ -56,7 +66,7 @@ function NewLoadLibrary (h){
 // var ReadFile = lib.GetProcAddress('ReadFile');
 // ReadFile( ..args.. );
 //===========================================================
-  exports.LoadLibrary = function (lib){
+  syscall.LoadLibrary = function (lib){
 //===========================================================
 	if (_LoadedLib[lib]) {
 		return _LoadedLib[lib];
@@ -85,10 +95,10 @@ function IPv4(a1, a2, a3, a4){
 }
 
 //===========================================================
-  exports.LookupIP = function(name) {
+  syscall.LookupIP = function(name) {
 //===========================================================
 	var hints = new C.Struct.addrinfo();
-	var syscall = require('sockets');
+
 	//set hints
 	hints.ai_family   = syscall.AF_UNSPEC;
 	hints.ai_socktype = syscall.SOCK_STREAM;
@@ -97,7 +107,7 @@ function IPv4(a1, a2, a3, a4){
 	var result = C.void();
 	// name = UTF16PtrFromString(name);
 
-	var e = exports.getaddrinfo(name, null, hints, result);
+	var e = syscall.getaddrinfo(name, null, hints, result);
 	if (e !== 0){
 		throw new Error(e);
 	}
@@ -135,6 +145,6 @@ function IPv4(a1, a2, a3, a4){
 		}
 	}
 
-	exports.freeaddrinfo(freePTR);
+	syscall.freeaddrinfo(freePTR);
 	return addrs;
 };
