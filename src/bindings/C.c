@@ -11,7 +11,9 @@
 //=============================================================================
 #	define COMO_STRUCT_START(_struct)                                         \
 	_struct *str;                                                             \
-	duk_push_object(ctx)
+	duk_push_object(ctx);                                                     \
+	duk_push_number(ctx, sizeof(_struct));                                    \
+	duk_put_prop_string(ctx, -2, "length")
 
 // add struct member Macro
 //=============================================================================
@@ -94,13 +96,23 @@ COMO_METHOD(como_c_pointer) {
 
 
 /*=============================================================================
-  convert buffer data to pointer address
+  copy struct buffer into provided pointer
  ============================================================================*/
 COMO_METHOD(como_c_copy_data) {
 	size_t bufLen;
 	duk_int8_t *buf = duk_require_buffer_data(ctx, 0, &bufLen);
 	void *ptr       = duk_require_pointer(ctx, 1);
 	memcpy(buf, ptr, bufLen);
+	return 1;
+}
+
+/*=============================================================================
+  return pointer address of struct buffer
+ ============================================================================*/
+COMO_METHOD(como_c_buffer_to_pointer) {
+	size_t bufLen;
+	duk_int8_t *buf = duk_require_buffer_data(ctx, 0, &bufLen);
+	duk_push_pointer(ctx, buf);
 	return 1;
 }
 
@@ -156,11 +168,10 @@ COMO_METHOD(como_struct_sockaddr6) {
 	COMO_STRUCT_START(struct sockaddr_in6);
 	COMO_STRUCT_MEMBER(struct sockaddr_in6, sin6_family, "int16");
 	COMO_STRUCT_MEMBER(struct sockaddr_in6, sin6_port, "uint16");
+	COMO_STRUCT_MEMBER(struct sockaddr_in6, sin6_flowinfo, "uint32");
 	COMO_STRUCT_MEMBER(struct sockaddr_in6, sin6_addr, "uint32");
 	return 1;
 }
-
-
 
 
 /*=============================================================================
@@ -168,6 +179,7 @@ COMO_METHOD(como_struct_sockaddr6) {
  ============================================================================*/
 static const duk_function_list_entry como_C_funcs[] = {
 	{"copy_buffer_data", como_c_copy_data,       2},
+	{"to_pointer", como_c_buffer_to_pointer,     1},
 	{"pointer", como_c_pointer,                  4},
 	{"int", como_c_int,                          4},
 	{"int8", como_c_int8,                        4},

@@ -99,6 +99,12 @@ function create_struct_fields(fields){
 		}
 	});
 
+	Object.defineProperty(obj, 'pointer', {
+		get : function(){
+			return C.to_pointer(this);
+		}
+	});
+
 	obj.size = structSize;
 	return obj;
 }
@@ -136,10 +142,12 @@ function normalize_fields(fields){
 
 
 C.Struct.create = function(obj){
+	// if obj passed struct length use it
+	var length = obj.length; delete obj.length;
 	obj        = normalize_fields(obj);
 	var fields = create_struct_fields(obj);
 	return function(v){
-		var buf = new ArrayBuffer(fields.size);
+		var buf = new ArrayBuffer(length || fields.size);
 		if (v) C.copy_buffer_data(buf, v);
 		Object.setPrototypeOf(buf, fields);
 		Object.preventExtensions(buf);

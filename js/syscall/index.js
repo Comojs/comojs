@@ -89,11 +89,6 @@ if (platform === 'win32'){
 	require('syscall/linux')(module);
 }
 
-
-function IPv4(a1, a2, a3, a4){
-	return [a1, a2, a3, a4].join(':');
-}
-
 //===========================================================
   syscall.LookupIP = function(name) {
 //===========================================================
@@ -112,10 +107,6 @@ function IPv4(a1, a2, a3, a4){
 		throw new Error(e);
 	}
 
-	// if e != nil {
-	// 	return nil, &DNSError{Err: os.NewSyscallError("getaddrinfow", e).Error(), Name: name}
-	// }
-
 	// get pointer address stored in result buffer
 	var freePTR = result.ptr;
 	result = freePTR;
@@ -128,17 +119,14 @@ function IPv4(a1, a2, a3, a4){
 		switch (info.ai_family){
 			case syscall.AF_INET : {
 				var addr = new C.Struct.sockaddr(info.ai_addr);
-				var a    = addr.buffer.sin_addr;
-				addrs.push(IPv4(a[0], a[1], a[2], a[3]));
+				addrs.push(sock.ntop(addr.pointer));
 				break;
 			}
 
 			case syscall.AF_INET6 : {
-				console.log(info);
 				var addr = new C.Struct.sockaddr6(info.ai_addr);
-				var a    = addr.Buffer('sin6_addr');
-				console.log(a);
-				throw new Error('inet6 : not implemented');
+				addrs.push(sock.ntop(addr.pointer));
+				break;
 			}
 
 			default : throw new Error('unknown family type');
