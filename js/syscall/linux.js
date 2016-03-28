@@ -1,7 +1,6 @@
 module.exports = (function(platform){
 	var sys     = process.binding('syscall');
 
-	var types   = process.binding('types');
 	var struct  = require('struct');
 	var assert  = require('assert');
 	var errno   = require('errno');

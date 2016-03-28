@@ -33,6 +33,11 @@
 // signed numbers Macro
 //=============================================================================
 #	define COMO_C_SIGNED_METHOD(def) do {                                     \
+	if (duk_is_number(ctx, 0)){                                               \
+		def n = (def)duk_get_int(ctx, 0);                                     \
+		duk_push_int(ctx, n);                                                 \
+		return 1;                                                             \
+	}                                                                         \
 	char *buf  = duk_require_buffer_data(ctx, 0, NULL);                       \
 	int offset = duk_require_int(ctx, 1);                                     \
 	/* int size   = duk_require_int(ctx, 2); */                               \
@@ -49,6 +54,11 @@
 // unsigned numbers Macro
 //=============================================================================
 #	define COMO_C_USIGNED_METHOD(def) do {                                    \
+	if (duk_is_number(ctx, 0)){                                               \
+		def n = (def)duk_get_int(ctx, 0);                                     \
+		duk_push_uint(ctx, n);                                                \
+		return 1;                                                             \
+	}                                                                         \
 	char *buf  = duk_require_buffer_data(ctx, 0, NULL);                       \
 	int offset = duk_require_int(ctx, 1);                                     \
 	/* int size   = duk_require_int(ctx, 2); */                               \
@@ -182,6 +192,7 @@ static const duk_function_list_entry como_C_funcs[] = {
 	{"to_pointer", como_c_buffer_to_pointer,     1},
 	{"pointer", como_c_pointer,                  4},
 	{"int", como_c_int,                          4},
+	{"byte", como_c_uint8,                       4},
 	{"int8", como_c_int8,                        4},
 	{"int16", como_c_int16,                      4},
 	{"int32", como_c_int32,                      4},
@@ -204,21 +215,29 @@ static const duk_function_list_entry como_C_structs[] = {
 
 static const duk_number_list_entry como_C_sizeOf[] = {
 	/* c data size */
+	{"INT_MAX",          INT_MAX               },
 	{"int",              sizeof(int)           },
 	{"short",            sizeof(short)         },
 	{"long",             sizeof(long)          },
+	{"ulong",           sizeof(unsigned long)  },
+	{"longlong",        sizeof(long long)      },
 	{"double",           sizeof(double)        },
 	{"int8",             sizeof(duk_int8_t)    },
 	{"int16",            sizeof(duk_int16_t)   },
 	{"int32",            sizeof(duk_int32_t)   },
 	{"int64",            sizeof(duk_int64_t)   },
+	{"uint8",             sizeof(duk_uint8_t)  },
+	{"uint16",            sizeof(duk_uint16_t) },
+	{"uint32",            sizeof(duk_uint32_t) },
+	{"uint64",            sizeof(duk_uint64_t) },
 
 	#ifdef BOOL
 	{"BOOL",             sizeof(BOOL)          },
 	#endif
 	{"null",             sizeof(((void*)0))    },
+	{"NULL",             sizeof(((void*)0))    },
 	{"uintptr",          sizeof(duk_uintptr_t) },
-	{"intptr",           sizeof(duk_intptr_t) },
+	{"intptr",           sizeof(duk_intptr_t)  },
 	{NULL, 0}
 };
 

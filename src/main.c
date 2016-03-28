@@ -26,7 +26,6 @@ extern char **environ;
 static const duk_function_list_entry bindings_funcs[] = {
 	{ "constants"   , init_system_constants,  0},
 	{ "C"           , init_binding_C,         0},
-	{ "types"       , init_binding_types,     0},
 	{ "syscall"     , init_binding_syscall,   0},
 	{ "buffer"      , init_binding_buffer,    0},
 	{ "loop"        , init_binding_loop,      0},

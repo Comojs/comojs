@@ -105,7 +105,6 @@ void dump_stack(duk_context *ctx, const char *name) {
 /* BINDINGS */
 #include "bindings/constants.c"
 #include "bindings/C.c"
-#include "bindings/types.c"
 #include "bindings/buffer.c"
 #include "bindings/syscall.c"
 #include "bindings/loop.c"

@@ -1,5 +1,5 @@
 var assert = require('assert');
-var types  = process.binding('types');
+var types  = process.binding('C');
 
 var num = 0xFFFFFF;
 

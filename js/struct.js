@@ -15,7 +15,7 @@ module.exports = structs;
 
 var binding    = process.binding('buffer');
 var syscall    = process.binding('syscall');
-var dataTypes  = exports.data = process.binding('types').data;
+var sizeOf     = exports.data = process.binding('C').sizeOf;
 
 var namedStructs = {};
 
@@ -180,7 +180,7 @@ function Struct(obj){
 
 		// we can pass a pointer to another struct
 		if (val instanceof Struct){
-			length = dataTypes.uintptr;
+			length = sizeOf.uintptr;
 			type   = 'Pointer';
 			constructPointer.push([key, val]);
 		}
@@ -193,7 +193,7 @@ function Struct(obj){
 		}
 
 		else if (val === '*'){
-			length = dataTypes.intptr;
+			length = sizeOf.intptr;
 			type = 'Buffer';
 		}
 
@@ -206,7 +206,7 @@ function Struct(obj){
 		else {
 			if (val === null) val = 'NULL';
 
-			length = dataTypes[val];
+			length = sizeOf[val];
 
 			if (typeof length !== 'undefined'){
 				type = val;
@@ -345,7 +345,7 @@ structs.int32 = function(n){
 	return s;
 };
 
-if (dataTypes.int === 2){
+if (sizeOf.int === 2){
 	structs.int = function(n){
 		n = n || 1;
 		var s = new Int32Array(n);
