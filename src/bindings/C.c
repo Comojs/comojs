@@ -111,10 +111,34 @@ COMO_METHOD(como_c_pointer) {
 COMO_METHOD(como_c_copy_data) {
 	size_t bufLen;
 	duk_int8_t *buf = duk_require_buffer_data(ctx, 0, &bufLen);
-	void *ptr       = duk_require_pointer(ctx, 1);
+
+	void *ptr;
+	if (duk_is_pointer(ctx, 1)){
+		ptr = duk_get_pointer(ctx, 1);
+	} else {
+		ptr  = duk_require_buffer_data(ctx, 1, NULL);
+	}
 	memcpy(buf, ptr, bufLen);
 	return 1;
 }
+
+
+COMO_METHOD(como_c_copy_structs) {
+	size_t bufLen, buf2Len;
+
+	duk_int8_t *buf  = duk_require_buffer_data(ctx, 0, &bufLen);
+	int offset       = duk_require_int(ctx, 1);
+	int size         = duk_require_int(ctx, 2);
+	duk_int8_t *buf2 = duk_require_buffer_data(ctx, 3, &buf2Len);
+
+	if ( (offset + size) >  bufLen ) {
+		duk_error(ctx, DUK_ERR_RANGE_ERROR, "offset + size out of range");
+	}
+
+	memcpy(&buf[offset], buf2, size);
+	return 1;
+}
+
 
 /*=============================================================================
   return pointer address of struct buffer
@@ -189,6 +213,7 @@ COMO_METHOD(como_struct_sockaddr6) {
  ============================================================================*/
 static const duk_function_list_entry como_C_funcs[] = {
 	{"copy_buffer_data", como_c_copy_data,       2},
+	{"copy_structs", como_c_copy_structs,        4},
 	{"to_pointer", como_c_buffer_to_pointer,     1},
 	{"pointer", como_c_pointer,                  4},
 	{"int", como_c_int,                          4},

@@ -1,7 +1,6 @@
 module.exports = (function(platform){
 	var sys     = process.binding('syscall');
-
-	var struct  = require('struct');
+	var C       = require('C');
 	var assert  = require('assert');
 	var errno   = require('errno');
 
@@ -12,16 +11,16 @@ module.exports = (function(platform){
 	  var Timespec                                   // STRUCT //
 	//===========================================================
 	= exports.Timespec
-	= struct.create('Timespec', {
+	= C.Struct.create({
 		Sec  : 'int32',
 		Nsec : 'int32'
 	});
 
 	//===========================================================
-		var Stat_t                                   // STRUCT //
+	  var Stat_t                                   // STRUCT //
 	//===========================================================
 	= exports.Stat_t
-	= struct.create('Stat_t', {
+	= C.Struct.create({
 		Dev       : 'uint64',
 		X__pad1   : 'uint16',
 		Pad_cgo_0 : 2, //2 bytes buffer padding
@@ -36,9 +35,9 @@ module.exports = (function(platform){
 		Size      : 'int64',
 		Blksize   : 'int32',
 		Blocks    : 'int64',
-		Atim      : 'Timespec',
-		Mtim      : 'Timespec',
-		Ctim      : 'Timespec',
+		Atim      : exports.Timespec, //Timespec
+		Mtim      : exports.Timespec, //Timespec
+		Ctim      : exports.Timespec, //Timespec
 		Ino       : 'uint64'
 	});
 
@@ -117,11 +116,11 @@ module.exports = (function(platform){
 
 	// return a pair of pipes, null on error
 	//===========================================================
-	  var pairs = struct.int(2);
+	  var pairs = new C.Struct.create({ f : 'int', s : 'int' })();
 	  exports.pipe = function(){
 	//===========================================================
 		if (pipe(pairs) === null) return null;
-		return [pairs.get(0), pairs.get(1)];
+		return [pairs.f, pairs.s];
 	}
 
 
@@ -131,7 +130,7 @@ module.exports = (function(platform){
 		  exports.pipe2 = function(flags){
 		//===========================================================
 			if (pipe2(pairs, flags || 0) === null) return null;
-			return [pairs.get(0), pairs.get(1)];
+			return [pairs.f, pairs.s];
 		}
 	}
 

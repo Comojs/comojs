@@ -1,6 +1,5 @@
 module.exports = (function(platform){
 	var binding = process.binding('syscall');
-	var struct  = require('struct');
 	var assert  = require('assert');
 	var errno   = require('errno');
 	var C       = require('C');
@@ -148,17 +147,18 @@ module.exports = (function(platform){
 		SW_FORCEMINIMIZE   = 11
 	}
 
+	var WORD   = 'uint16';
 	var DWORD  = 'uint32';
-	var HANDLE = 'uintptr';
-
+	var HANDLE = 'uint32';
+	var ULONG  = 'uint32';
 
 	//===========================================================
 		var Overlapped                               // STRUCT //
 	//===========================================================
 	= exports.Overlapped
-	= struct.create('Overlapped', {
-		Internal     : 'uintptr',
-		InternalHigh : 'uintptr',
+	= C.Struct.create({
+		Internal     : ULONG,
+		InternalHigh : ULONG,
 		Offset       : 'uint32',
 		OffsetHigh   : 'uint32',
 		HEvent       : HANDLE
@@ -169,7 +169,7 @@ module.exports = (function(platform){
 		var Filetime                                 // STRUCT //
 	//===========================================================
 	= exports.Filetime
-	= struct.create('Filetime', {
+	= C.Struct.create({
 		LowDateTime  : DWORD,
 		HighDateTime : DWORD
 	});
@@ -179,11 +179,11 @@ module.exports = (function(platform){
 		var ByHandleFileInformation                  // STRUCT //
 	//===========================================================
 	= exports.ByHandleFileInformation
-	= struct.create('ByHandleFileInformation', {
+	= C.Struct.create({
 		FileAttributes      : DWORD,
-		CreationTime        : 'Filetime',
-		LastAccessTime      : 'Filetime',
-		LastWriteTime       : 'Filetime',
+		CreationTime        : exports.Filetime,
+		LastAccessTime      : exports.Filetime,
+		LastWriteTime       : exports.Filetime,
 		VolumeSerialNumber  : DWORD,
 		FileSizeHigh        : DWORD,
 		FileSizeLow         : DWORD,
@@ -197,23 +197,38 @@ module.exports = (function(platform){
 		var Win32FileAttributeData                   // STRUCT //
 	//===========================================================
 	= exports.Win32FileAttributeData
-	= struct.create('Win32FileAttributeData', {
+	= C.Struct.create({
 		FileAttributes : 'uint32',
-		CreationTime   : 'Filetime',
-		LastAccessTime : 'Filetime',
-		LastWriteTime  : 'Filetime',
+		CreationTime   : exports.Filetime,
+		LastAccessTime : exports.Filetime,
+		LastWriteTime  : exports.Filetime,
 		FileSizeHigh   : 'uint32',
 		FileSizeLow    : 'uint32'
 	});
 
 
 	//===========================================================
+		var SystemTime                               // STRUCT //
+	//===========================================================
+	= exports.SystemTime
+	= C.Struct.create({
+		Year         : WORD,
+		Month        : WORD,
+		DayOfWeek    : WORD,
+		Day          : WORD,
+		Hour         : WORD,
+		Minute       : WORD,
+		Second       : WORD,
+		Milliseconds : WORD
+	});
+
+	//===========================================================
 		var SecurityAttributes                       // STRUCT //
 	//===========================================================
 	= exports.SecurityAttributes
-	= struct.create ('SecurityAttributes', {
+	= C.Struct.create ({
 		Length             : 'uint32',
-		SecurityDescriptor : 'uintptr',
+		SecurityDescriptor : 'uint32',
 		InheritHandle      : 'uint32'
 	});
 
@@ -222,7 +237,7 @@ module.exports = (function(platform){
 		var StartupInfo                              // STRUCT //
 	//===========================================================
 	= exports.StartupInfo
-	= struct.create('StartupInfo', {
+	= C.Struct.create({
 		Cb            : 'uint32',
 		Reserved1     : '*',
 		Desktop       : '*',
@@ -247,7 +262,7 @@ module.exports = (function(platform){
 		var ProcessInformation                       // STRUCT //
 	//===========================================================
 	= exports.ProcessInformation
-	= struct.create('ProcessInformation', {
+	= C.Struct.create({
 		Process   : HANDLE,
 		Thread    : HANDLE,
 		ProcessId : 'uint32',
@@ -281,7 +296,7 @@ module.exports = (function(platform){
 	var DuplicateHandle = kernel.GetProcAddress('DuplicateHandle', 0);
 	var GetCurrentProcess = kernel.GetProcAddress('GetCurrentProcess');
 	var GetCurrentProcessId = kernel.GetProcAddress('GetCurrentProcessId');
-
+	var FileTimeToSystemTime = kernel.GetProcAddress('FileTimeToSystemTime', 0, 2);
 	var OpenProcess    = kernel.GetProcAddress('OpenProcess', 0);
 	var TerminateProcess   = kernel.GetProcAddress('TerminateProcess', 0, 2);
 	var CreateProcess    = kernel.GetProcAddress('CreateProcessW', 0);
@@ -312,6 +327,7 @@ module.exports = (function(platform){
 
 	  exports.WriteFile = WriteFile;
 	  exports.GetFileInformationByHandle = GetFileInformationByHandle;
+	  exports.FileTimeToSystemTime  = FileTimeToSystemTime;
 	//===========================================================
 
 
@@ -527,12 +543,12 @@ module.exports = (function(platform){
 	// on error returns null and set process.errno
 	// to the last syscall error
 	//===========================================================
-	  var rDone = struct.uint32();
+	  var rDone = new C.void( C.sizeOf.uint32 );
 	  exports.Read = function(fd, b) {
 	//===========================================================
 		var e = ReadFile(fd, b, b.byteLength, rDone, null);
 		if (e === null) return e;
-		return rDone.get();
+		return rDone.uint32;
 	};
 
 
@@ -540,12 +556,12 @@ module.exports = (function(platform){
 	// return null on failure and number of written data
 	// on success
 	//===========================================================
-	  var wDone = struct.uint32();
+	  var wDone = new C.void( C.sizeOf.uint32 );
 	  exports.Write = function(fd, b) {
 	//===========================================================
 		var e = WriteFile(fd, b, b.byteLength, wDone, null);
 		if (e === null) return null;
-		return wDone.get();
+		return wDone.uint32;
 	};
 
 
@@ -563,8 +579,8 @@ module.exports = (function(platform){
 			deafult: throw new Error('unknown file seek whence');
 		}
 
-		var hi = struct.int32(1);
-		hi.set( offset.RShift(32) ); // offset >> 32
+		var hi = new C.void( C.sizeOf.uint32 );
+		hi.uint32 = offset.RShift(32); // offset >> 32
 
 		var lo = offset;
 		// use GetFileType to check pipe, pipe can't do seek
@@ -578,6 +594,6 @@ module.exports = (function(platform){
 		if (rlo === null) return null;
 
 		//(hi << 32) + rlo
-		return ( hi.get().LShift(32) ) + rlo;
+		return ( hi.uint32.LShift(32) ) + rlo;
 	};
 });
