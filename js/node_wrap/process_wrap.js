@@ -1,11 +1,8 @@
-
 var uv           = require('uv');
 var MakeCallback = process.MakeCallback;
-var cons = require('constants');
+var cons         = require('constants');
 
-function Process (){
-
-}
+function Process (){}
 
 // convert signal number to string
 // return null if not found
@@ -49,7 +46,6 @@ function ParseStdioOptions(stdios, options){
 		}
 
 		else {
-			console.log(stdio);
 			throw new Error('unknown type!');
 		}
 	}
@@ -107,7 +103,6 @@ Process.prototype.spawn = function(js_options){
 	// on exit call back
 	options.exit_cb = function(status, term_signal){
 		var sig = signum_to_string(term_signal);
-		// MakeCallback(process, 'onexit', status, sig);
 		process.onexit(status, sig);
 	};
 

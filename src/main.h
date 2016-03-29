@@ -89,9 +89,13 @@ void dump_stack(duk_context *ctx, const char *name) {
 	n = duk_get_top(ctx);
 	printf("%s (top=%ld):", name, (long) n);
 	for (i = 0; i < n; i++) {
-		printf(" ");
+		printf(" (%i)- ", i);
 		duk_dup(ctx, i);
-		printf("%s", duk_safe_to_string(ctx, -1));
+		if (duk_get_type(ctx, -1) == DUK_TYPE_BUFFER){
+			printf("%s", "BUFFER");
+		} else {
+			printf("%s", duk_safe_to_string(ctx, -1));
+		}
 		duk_pop(ctx);
 	}
 	printf("\n");
@@ -100,7 +104,7 @@ void dump_stack(duk_context *ctx, const char *name) {
 
 /* BINDINGS */
 #include "bindings/constants.c"
-#include "bindings/types.c"
+#include "bindings/C.c"
 #include "bindings/buffer.c"
 #include "bindings/syscall.c"
 #include "bindings/loop.c"

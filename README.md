@@ -11,6 +11,7 @@ Philosophy
 * Implement most things in javascript
 * Must maintaine a low footprint memory usage
 * Should run without compilation using tinycc compiler
+* Should compile with libmusl
 * Fast compilation time, current compilation time ~ 3 seconds (without embdTLS)
 
 
@@ -67,7 +68,7 @@ node modules
 - [x] timers
 - [x] net
 - [x] child_process
-- [ ] dns
+- [ ] dns (partial)
 - [ ] tty
 - [ ] http
 - [ ] https

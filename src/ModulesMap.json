@@ -1,13 +1,12 @@
 {
 	"main"                : "js/main.js",
 	"loop"                : "js/loop.js",
-	"struct"              : "js/struct.js",
 
+	"C"                   : "js/C.js",
 	"syscall"             : "js/syscall/index.js",
 	"syscall/linux"       : "js/syscall/linux.js",
 	"syscall/windows"     : "js/syscall/windows.js",
 
-	"sockets"             : "js/socket.js",
 	"module"              : "js/module.js",
 	"http_parser"         : "js/http-parser.js",
 	"socket"              : "js/socket.js",

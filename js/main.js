@@ -8,8 +8,8 @@ global.DTRACE_NET_STREAM_END = function(){};
 global.LTTNG_NET_STREAM_END = function(){};
 global.NODE_BUFFER = Buffer;
 
-//FIXME: use Objectsetporperity instead?!
-//definegetter polufill
+// FIXME: use Objectsetporperity instead?!
+// definegetter polyfill
 if (typeof Object.prototype.__defineGetter__ === 'undefined') {
 	Object.defineProperty(Object.prototype, '__defineGetter__', {
 		value: function (n, f) {

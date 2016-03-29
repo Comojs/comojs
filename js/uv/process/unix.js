@@ -4,7 +4,7 @@ var errno    = require('errno');
 var syscall  = require('syscall');
 var SYS      = syscall.SYS;
 var timers   = require('timers');
-var struct   = require('struct');
+var C        = require('C');
 
 var DETACHED_PROCESS           = 0x00000008;
 var CREATE_NEW_PROCESS_GROUP   = 0x00000200;
@@ -264,7 +264,7 @@ function Process (options) {
 	uv.close(signal_pipe[1]);
 
 	// waitpid status
-	var status = struct.int();
+	var status = new C.void( C.sizeOf.int );
 	var r;
 	var spawn_error = 0;
 
@@ -311,7 +311,7 @@ function Process (options) {
 		this.child_watcher = setInterval(function(){
 			var t = syscall.waitpid(pid, status, SYS.WNOHANG);
 			if (t === pid){
-				var s = status.get();
+				var s = status.int;
 				var exitcode = 0;
 				var termsignal = 0;
 

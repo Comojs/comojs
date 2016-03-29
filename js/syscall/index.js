@@ -1,6 +1,16 @@
 var binding = process.binding('syscall');
-var types   = process.binding('types');
 var errno   = require('errno');
+var C       = require('C');
+var sock    = require('socket');
+var syscall = exports;
+
+{	// shared constants
+	syscall.AF_UNSPEC   = sock.AF_UNSPEC;
+	syscall.SOCK_STREAM = sock.SOCK_STREAM;
+	syscall.IPPROTO_IP  = sock.IPPROTO_IP;
+	syscall.AF_INET     = sock.AF_INET;
+	syscall.AF_INET6    = sock.AF_INET6;
+}
 
 var _LoadedLib = {};
 var littleEndian = (function() {
@@ -40,7 +50,7 @@ function NewLoadLibrary (h){
 			var r = retVal.getInt32(0, littleEndian);
 			if (typeof errval !== 'undefined'){
 				if (r === errval){
-					process.errno = exports.GetLastError() || errno.EINVAL;
+					process.errno = syscall.GetLastError() || errno.EINVAL;
 					return null;
 				}
 			}
@@ -50,11 +60,14 @@ function NewLoadLibrary (h){
 	};
 }
 
+
 // load WINAPI Library
 // var lib = syscall.LoadLibrary('kernel32');
 // var ReadFile = lib.GetProcAddress('ReadFile');
 // ReadFile( ..args.. );
-exports.LoadLibrary = function (lib){
+//===========================================================
+  syscall.LoadLibrary = function (lib){
+//===========================================================
 	if (_LoadedLib[lib]) {
 		return _LoadedLib[lib];
 	}
@@ -70,9 +83,56 @@ exports.LoadLibrary = function (lib){
 
 
 var platform = process.platform;
-
 if (platform === 'win32'){
 	require('syscall/windows')(module);
 } else {
 	require('syscall/linux')(module);
 }
+
+//===========================================================
+  syscall.LookupIP = function(name) {
+//===========================================================
+	var hints = new C.Struct.addrinfo();
+
+	//set hints
+	hints.ai_family   = syscall.AF_UNSPEC;
+	hints.ai_socktype = syscall.SOCK_STREAM;
+	hints.ai_protocol = syscall.IPPROTO_IP;
+
+	var result = C.void();
+	// name = UTF16PtrFromString(name);
+
+	var e = syscall.getaddrinfo(name, null, hints, result);
+	if (e !== 0){
+		throw new Error(e);
+	}
+
+	// get pointer address stored in result buffer
+	var freePTR = result.ptr;
+	result = freePTR;
+	var addrs = [];
+
+	var info = new C.Struct.addrinfo(result);
+	while (result !== null){
+		var info = new C.Struct.addrinfo(result);
+		result = info.ai_next;
+		switch (info.ai_family){
+			case syscall.AF_INET : {
+				var addr = new C.Struct.sockaddr(info.ai_addr);
+				addrs.push(sock.ntop(addr.pointer));
+				break;
+			}
+
+			case syscall.AF_INET6 : {
+				var addr = new C.Struct.sockaddr6(info.ai_addr);
+				addrs.push(sock.ntop(addr.pointer));
+				break;
+			}
+
+			default : throw new Error('unknown family type');
+		}
+	}
+
+	syscall.freeaddrinfo(freePTR);
+	return addrs;
+};
