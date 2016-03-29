@@ -5,7 +5,7 @@ var assert   = require('assert');
 var syscall  = require('syscall');
 var SYS      = syscall.SYS;
 
-var struct   = require('struct');
+var C        = require('C');
 var constant  = require('constants');
 
 var isWin   = process.platform === 'win32';
@@ -201,13 +201,13 @@ exports.isWin = isWin;
 // win32 return exit code of the running process (h)
 // exit code 259 indicates that the process still running
 //===========================================================
-  var exitCode = new struct.int32();
+  var exitCode = new C.void( C.sizeOf.int32 );
   exports.get_exit_code = function(h){
 //===========================================================
 	if (syscall.GetExitCodeProcess(h, exitCode) === null){
 		throw new Error("GetExitCodeProcess error " + process.errno);
 	}
-	return exitCode.get();
+	return exitCode.int32;
 };
 
 
@@ -272,7 +272,7 @@ exports.isWin = isWin;
 
 var STILL_ACTIVE = 259;
 var Win32kill = exports.Win32kill = function(process_handle, signum){
-	var status = new struct.int32();
+	var status = new C.void( C.sizeOf.int32 );
 	switch (signum) {
 		case constant.SIGTERM:
 		case constant.SIGKILL:
@@ -288,7 +288,7 @@ var Win32kill = exports.Win32kill = function(process_handle, signum){
 			err = syscall.GetLastError();
 			if (err == errno.ERROR_ACCESS_DENIED &&
 					syscall.GetExitCodeProcess(process_handle, status) &&
-					status.get() !== STILL_ACTIVE) {
+					status.int32 !== STILL_ACTIVE) {
 				return errno.ESRCH;
 			}
 
@@ -302,7 +302,7 @@ var Win32kill = exports.Win32kill = function(process_handle, signum){
 				return errno.translate(process.errno);
 			}
 
-			if (status.get() !== STILL_ACTIVE) {
+			if (status.int32 !== STILL_ACTIVE) {
 				return errno.ESRCH;
 			}
 
@@ -404,7 +404,7 @@ if (isWin){
 // windows recvmsg & sendmsg emulation
 // this should be moved to a seperate platform
 // file ** TODO
-var protobuf = struct.create({
+var protobuf = C.Struct.create({
 	start  : 'uint16',
 	target : 'uint32',
 	pid    : 'uint32',
@@ -420,7 +420,7 @@ if (isWin){
 	  var pseudo_id = syscall.GetCurrentProcess();
 	  exports.duplicate_handle = function(h){
 	//===========================================================
-		var dupHandle = new struct.int32();
+		var dupHandle = new C.void( C.sizeOf.int32 );
 
 		var ret = syscall.DuplicateHandle( pseudo_id, h, pseudo_id, dupHandle, 0, 1,
 			syscall.DUPLICATE_SAME_ACCESS);
@@ -429,17 +429,16 @@ if (isWin){
 			throw new Error("can't duplicate handle");
 		}
 
-		return dupHandle.get();
+		return dupHandle.int32;
 	};
 
 
 	// win32 sendmsg
 	//===========================================================
-	  var dupHandle = new struct.int32();
 	  exports.sendmsg = function(fd, buf, len, fd_to_send, pid, flag){
 	//===========================================================
-		var protoBuf = new protobuf();
-
+		var dupHandle = new C.void( C.sizeOf.int32 );
+		var protoBuf  = new protobuf();
 		var ret = syscall.DuplicateHandle(
 			-1,
 			fd_to_send,
@@ -453,7 +452,7 @@ if (isWin){
 
 		protoBuf.target = pid;
 		protoBuf.pid = process.pid;
-		protoBuf.handle = dupHandle.get();
+		protoBuf.handle = dupHandle.int32;
 
 		// special message
 		protoBuf.start = 123;
@@ -472,7 +471,8 @@ if (isWin){
 	  var PROCESS_DUP_HANDLE = 0x0040;
 	  exports.recvmsg = function(fd, len, fds){
 	//===========================================================
-		var protoBuf = new protobuf();
+		var dupHandle = new C.void( C.sizeOf.int32 );
+		var protoBuf  = new protobuf();
 		var n = sock.readIntoBuffer(fd, protoBuf, 0);
 		if (n === null) return null;
 
@@ -502,7 +502,7 @@ if (isWin){
 				throw new Error("can't duplicate");
 			}
 
-			fds.push(dupHandle.get());
+			fds.push(dupHandle.int32);
 		}
 		else { // it's just a normal data sent to socket
 			return Buffer(protoBuf, 0, n).toString();
@@ -527,8 +527,8 @@ if (isWin){
 	  exports.recvmsg = function(fd, len, fds){
 	//===========================================================
 		//get fd
-		var pfd = struct.int();
-		pfd.set(-1);
+		var pfd = new C.void( C.sizeOf.int );
+		pfd.int = -1;
 
 		var buf = Buffer(len);
 		var ret = sock.recvfd(fd, buf, pfd);
@@ -536,7 +536,7 @@ if (isWin){
 			return null;
 		}
 
-		var nfd = pfd.get();
+		var nfd = pfd.int;
 		if (nfd !== -1){
 			exports.cloexec(nfd, 1);
 			fds.push(nfd);

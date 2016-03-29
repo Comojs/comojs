@@ -1,7 +1,6 @@
 {
 	"main"                : "js/main.js",
 	"loop"                : "js/loop.js",
-	"struct"              : "js/struct.js",
 
 	"C"                   : "js/C.js",
 	"syscall"             : "js/syscall/index.js",

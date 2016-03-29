@@ -22,6 +22,10 @@ var _typesMap = {
 		fn   : C.uint32,
 		size : C.sizeOf.int32
 	},
+	uint64 : {
+		fn   : C.uint64,
+		size : C.sizeOf.uint64
+	},
 	int : {
 		fn   : C.int,
 		size : C.sizeOf.int
@@ -38,7 +42,15 @@ var _typesMap = {
 		fn   : C.int32,
 		size : C.sizeOf.int32
 	},
+	int64 : {
+		fn   : C.int64,
+		size : C.sizeOf.int64
+	},
 	pointer : {
+		fn   : C.pointer,
+		size : C.sizeOf.uintptr
+	},
+	'*' : {
 		fn   : C.pointer,
 		size : C.sizeOf.uintptr
 	}
@@ -118,7 +130,19 @@ function normalize_fields(fields){
 	var offset = 0;
 	Object.keys(fields).forEach(function(name) {
 		var type = fields[name];
-		if (typeof type === 'string'){
+
+		// number field value
+		if (typeof type === 'number'){
+			fields[name] = {
+				fn     : function(){ throw new Error('number field struct') },
+				size   : type,
+				offset : offset
+			};
+			offset += fields[name].size;
+		}
+
+		// string field type [uint32, int32, int, ...]
+		else if (typeof type === 'string'){
 			var clone = _typesMap[type];
 			if (!clone) throwField(type);
 			fields[name] = {
@@ -128,7 +152,28 @@ function normalize_fields(fields){
 			};
 			offset += fields[name].size;
 		}
-		else { // object, most likely passed by C struct
+
+		// function field value, passed as another struct
+		else if (typeof type === 'function' && type.byteLength){
+			var struct = new type();
+			fields[name] = {
+				fn : function(buf, off, size, v){
+					if (typeof v === 'undefined'){
+						// C.copy_structs(struct, 0, struct.length, Buffer(buf).slice(off,size));
+						C.copy_buffer_data(struct, Buffer(buf).slice(off,size));
+						return struct;
+					} else {
+						C.copy_structs(buf, off, size, v);
+					}
+				},
+				size   : type.byteLength,
+				offset : offset
+			};
+			offset += fields[name].size;
+		}
+
+		// object, most likely passed by C struct
+		else {
 			fields[name] = (function(){
 				var obj = fields[name];
 				obj.fn  = _typesMap[obj.type] ? _typesMap[obj.type].fn : throwField(obj.type);
@@ -146,13 +191,17 @@ C.Struct.create = function(obj){
 	var length = obj.length; delete obj.length;
 	obj        = normalize_fields(obj);
 	var fields = create_struct_fields(obj);
-	return function(v){
-		var buf = new ArrayBuffer(length || fields.size);
+	length     = length || fields.size;
+	var structure = function(v){
+		var buf = new ArrayBuffer(length);
 		if (v) C.copy_buffer_data(buf, v);
 		Object.setPrototypeOf(buf, fields);
 		Object.preventExtensions(buf);
 		return buf;
 	};
+
+	structure.byteLength = length;
+	return structure;
 };
 
 
@@ -160,6 +209,33 @@ var voidValues = {};
 Object.defineProperty(voidValues, 'ptr', {
 	get : function(){
 		return C.pointer(this);
+	}
+});
+
+Object.defineProperty(voidValues, 'int', {
+	get : function(){
+		return C.int(this, 0);
+	},
+	set : function(v){
+		C.int(this, 0, 0, v);
+	}
+});
+
+Object.defineProperty(voidValues, 'int32', {
+	get : function(){
+		return C.int32(this, 0);
+	},
+	set : function(v){
+		C.int32(this, 0, 0, v);
+	}
+});
+
+Object.defineProperty(voidValues, 'uint32', {
+	get : function(){
+		return C.uint32(this, 0);
+	},
+	set : function(v){
+		C.uint32(this, 0, 0, v);
 	}
 });
 
