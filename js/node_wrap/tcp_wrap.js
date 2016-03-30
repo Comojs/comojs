@@ -112,7 +112,7 @@ TCP.prototype.writeUtf8String = function(req, data){
 
 TCP.prototype.connect = function(req_wrap_obj, ip_address, port){
 	var tcp = this;
-	var addr = uv.ip4_addr("127.0.0.1", port);
+	var addr = uv.ip4_addr(ip_address, port);
 	if (addr === null){
 		return process.errno;
 	}
@@ -122,4 +122,23 @@ TCP.prototype.connect = function(req_wrap_obj, ip_address, port){
 		//req_wrap_obj.oncomplete(status, tcp, req_wrap_obj, true, true);
 	});
 	return err;
+};
+
+
+// TODO: use syscall!!
+TCP.prototype.getsockname = function(out){
+	var addr = sock.getsockname(this._handle.fd);
+	var info = sock.addr_info(addr);
+	out.address = info[0];
+	out.port    = info[1];
+	switch (sock.isIP(out.address)){
+		case 4 : out.family = 'IPv4'; break;
+		case 6 : out.family = 'IPv6'; break;
+		default : throw new Error('unknown family type');
+	}
+};
+
+
+TCP.prototype.setKeepAlive = function(){
+	throw new Error('setKeepAlive');
 };
