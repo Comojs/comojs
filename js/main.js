@@ -61,6 +61,9 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	process.reportError = function (e){
+		var caught;
+		if (!caught) caught = process.emit('uncaughtException', e);
+		if (caught) return;
 		print(e.stack || e);
 		process.reallyExit(1);
 	};
@@ -503,28 +506,33 @@ if (typeof Number.isFinite !== 'function') {
 		loop.handle_unref(gcHandle);
 		loop.timer_start(gcHandle, 5000, 5000);
 
-		try {
-			var i = 0;
-			var n = 0;
-			while(1){
+		(function _starter(){
+			try {
+				var i = 0;
+				var n = 0;
+				while(1){
 
-				for (i = 0; i < 16; i++){
+					for (i = 0; i < 16; i++){
+						process._tickCallBack();
+						n = loop.run(main_loop, 1);
+						if (n == 0) break;
+					}
+
 					process._tickCallBack();
 					n = loop.run(main_loop, 1);
 					if (n == 0) break;
+					process.sleep(1);
 				}
 
-				process._tickCallBack();
-				n = loop.run(main_loop, 1);
-				if (n == 0) break;
-				process.sleep(1);
+				// loop.run(main_loop, 0);
+				process.emit('exit', 0);
+			} catch (e){
+				process.reportError(e);
+				// if we reached here then error has been handeled
+				// by uncaughtException, so redo our loop
+				_starter();
 			}
-
-			// loop.run(main_loop, 0);
-			process.emit('exit', 0);
-		} catch (e){
-			process.reportError(e);
-		}
+		})();
 	};
 
 	var r = NativeModule.require('module');
