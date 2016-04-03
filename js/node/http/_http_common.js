@@ -149,7 +149,7 @@ function parserOnMessageComplete() {
 }
 
 
-var parsers = new FreeList('parsers', 10, function() {
+var parsers = new FreeList('parsers', 1000, function() {
   var parser = new HTTPParser(HTTPParser.REQUEST);
 
   parser._headers = [];
