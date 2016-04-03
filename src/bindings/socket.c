@@ -223,7 +223,7 @@ COMO_METHOD(como_sock_getsockopt) {
  ============================================================================*/
 COMO_METHOD(como_sock_inet_pton4) {
 
-	int port       = duk_require_int(ctx,1);
+	int port = duk_get_int(ctx,1);
 
 	struct sockaddr_in *addr = malloc(sizeof(*addr));
 	memset(addr, 0, sizeof(*addr));
@@ -257,7 +257,7 @@ COMO_METHOD(como_sock_inet_pton4) {
  ============================================================================*/
 COMO_METHOD(como_sock_inet_pton6) {
 
-	int port = duk_require_int(ctx,1);
+	int port = duk_get_int(ctx,1);
 
 	struct sockaddr_in6 *addr = malloc(sizeof(*addr));
 	memset(addr, 0, sizeof(*addr));
