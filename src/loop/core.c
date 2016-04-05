@@ -292,11 +292,11 @@ evLoop *main_loop () {
 	return gLoop;
 }
 
-static void _free_handle(evHandle *handle) {
-	free(handle->ev);
-	handle->ev = NULL;
-	free(handle);
-}
+// static void _free_handle(evHandle *handle) {
+// 	free(handle->ev);
+// 	handle->ev = NULL;
+// 	free(handle);
+// }
 
 void loop_run_closing_handles(evLoop *loop){
 	QUEUE *q;
