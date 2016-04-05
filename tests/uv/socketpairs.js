@@ -35,7 +35,7 @@ uv.write(fds[1], ping, ping.length);
 setTimeout(function(){
 	handle.close();
 	handle2.close();
-}, 100);
+}, 1000);
 
 process.on('exit', function(){
 	assert(uv.close(fds[0]));
