@@ -9,7 +9,7 @@ var stream = require('stream');
 var util = require('util');
 
 
-exports.PORT = 9089;
+exports.PORT = +process.env.NODE_COMMON_PORT || 12346;
 exports.isWindows = process.platform === 'win32';
 exports.testDir = path.dirname(__filename);
 exports.fixturesDir = path.join(exports.testDir, 'fixtures');
@@ -147,3 +147,41 @@ exports.platformTimeout = function(ms) {
 
   return ms; // ARMv8+
 };
+
+exports.weak = function(obj, cb){
+  var called = false;
+  Duktape.fin(obj, function (x) {
+      if (called) return;
+      called = true;
+      try {
+        cb();
+      } catch (e) {
+        print('WARNING: finalizer failed (ignoring): ' + e);
+      }
+  });
+}
+
+exports.hasMultiLocalhost = function hasMultiLocalhost() {
+  var TCP = process.binding('tcp_wrap').TCP;
+  var t = new TCP();
+  var ret = t.bind('127.0.0.2', exports.PORT);
+  t.close();
+  return ret === 0;
+};
+
+if (exports.isWindows) {
+  exports.PIPE = '\\\\.\\pipe\\libuv-test';
+} else {
+  exports.PIPE = exports.tmpDir + '/test.sock';
+}
+
+if (process.env.NODE_COMMON_PIPE) {
+  exports.PIPE = process.env.NODE_COMMON_PIPE;
+  // Remove manually, the test runner won't do it
+  // for us like it does for files in test/tmp.
+  try {
+    fs.unlinkSync(exports.PIPE);
+  } catch (e) {
+    // Ignore.
+  }
+}
