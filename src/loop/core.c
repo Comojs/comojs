@@ -292,13 +292,11 @@ evLoop *main_loop () {
 	return gLoop;
 }
 
-static void _free_handle(evHandle *handle) {
-	if (handle == NULL) return;
-	free(handle->ev);
-	handle->ev = NULL;
-	free(handle);
-	handle = NULL;
-}
+// static void _free_handle(evHandle *handle) {
+// 	free(handle->ev);
+// 	handle->ev = NULL;
+// 	free(handle);
+// }
 
 void loop_run_closing_handles(evLoop *loop){
 	QUEUE *q;
@@ -311,7 +309,7 @@ void loop_run_closing_handles(evLoop *loop){
 		if (handle->close != NULL){
 			handle->close(handle);
 		}
-		_free_handle(handle);
+		// _free_handle(handle);
 	}
 }
 

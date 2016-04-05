@@ -55,7 +55,8 @@ TCP.prototype.bind = function(addr, flags) {
 
 	if (err) return err;
 
-	if (!sock.setsockopt(this.fd, sock.SOL_SOCKET, sock.SO_REUSEADDR, 1)) {
+	var set = process.platform === 'win32' ? 0 : 1;
+	if (!sock.setsockopt(this.fd, sock.SOL_SOCKET, sock.SO_REUSEADDR, set)) {
 		return process.errno;
 	}
 
@@ -94,13 +95,15 @@ TCP.prototype.listen = function(backlog, cb){
 
 	this.connection_cb = cb.bind(this);
 
-	//FIXME: io_watcher still here
-	//we need to free resources
-	this.handle = loop.io(function(h, events){
+	// close previous loop watcher and
+	// create new one to be handled with
+	// server_io function
+	self.io_watcher.close();
+	this.io_watcher = loop.io(function(h, events){
 		self.server_io(events);
 	});
 
-	this.handle.start(this.fd, loop.POLLIN);
+	this.io_watcher.start(this.fd, loop.POLLIN);
 	return 0;
 };
 
@@ -121,62 +124,8 @@ TCP.prototype.connect = function(addr, cb){
 	this.connect_req    = 1;
 	if (cb) this.connect_req_cb = cb.bind(this);
 
-	self.io_watcher.start(self.fd, loop.POLLOUT);
+	self.io_watcher.start(self.fd, loop.POLLIN | loop.POLLOUT | loop.POLLERR);
 	sock.connect(this.fd, addr);
-
-	if (this.delayed_error) {
-		this.io_feed();
-	}
-
-	return 0;
-};
-
-
-TCP.prototype.connect = function(addr, cb){
-
-	if (this.connect_req){
-		return errno.EALREADY;  /* FIXME(bnoordhuis) -EINVAL or maybe -EBUSY. */
-	}
-
-	var family = sock.family(addr);
-
-	var err = this.maybe_new_socket(family, uv.STREAM_READABLE | uv.STREAM_WRITABLE);
-	if (err) return err;
-
-	this.delayed_error = 0;
-
-	do {
-		r = sock.connect(this.fd, addr);
-		if (isWin && r === null) sock.can_read(this.fd, 1);
-	} while (
-		r === null && (process.errno === errno.EINTR ||
-		isWin && process.errno === errno.EWOULDBLOCK)
-	);
-
-	var error = process.errno;
-	if (r === null) {
-		if (error === errno.EINPROGRESS || (isWin && error === 10056)) {
-			// this.delayed_error = error;
-			/* not an error */
-		} else if (error === errno.ECONNREFUSED || error === 10037) {
-			/* If we get a ECONNREFUSED wait until the next tick to report the
-			 * error. Solaris wants to report immediately--other unixes want to
-			 * wait.
-			 */
-			this.delayed_error = errno.ECONNREFUSED;
-		} else {
-			return error;
-		}
-	}
-
-	this.connect_req    = 1;
-	if (cb) this.connect_req_cb = cb.bind(this);
-
-	this.io_watcher.start(this.fd, loop.POLLOUT);
-
-	if (this.delayed_error) {
-		this.io_feed();
-	}
 
 	return 0;
 };

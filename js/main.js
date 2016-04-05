@@ -1,5 +1,18 @@
 this.global = this;
 
+global.COUNTER_HTTP_CLIENT_REQUEST = function(){};
+global.DTRACE_HTTP_CLIENT_RESPONSE = function(){};
+global.LTTNG_HTTP_CLIENT_RESPONSE = function(){};
+global.COUNTER_HTTP_CLIENT_RESPONSE = function(){};
+
+global.LTTNG_HTTP_CLIENT_REQUEST = function(){};
+global.DTRACE_HTTP_CLIENT_REQUEST = function(){};
+global.COUNTER_HTTP_SERVER_RESPONSE = function(){};
+global.LTTNG_HTTP_SERVER_RESPONSE = function(){};
+global.DTRACE_HTTP_SERVER_RESPONSE = function(){};
+global.COUNTER_HTTP_SERVER_REQUEST = function(){};
+global.LTTNG_HTTP_SERVER_REQUEST = function(){};
+global.DTRACE_HTTP_SERVER_REQUEST = function(){};
 global.DTRACE_NET_SERVER_CONNECTION = function(){};
 global.LTTNG_NET_SERVER_CONNECTION  = function(){};
 global.COUNTER_NET_SERVER_CONNECTION = function(){};
@@ -7,6 +20,8 @@ global.COUNTER_NET_SERVER_CONNECTION_CLOSE = function(){};
 global.DTRACE_NET_STREAM_END = function(){};
 global.LTTNG_NET_STREAM_END = function(){};
 global.NODE_BUFFER = Buffer;
+
+global.gc = Duktape.gc;
 
 // FIXME: use Objectsetporperity instead?!
 // definegetter polyfill
@@ -46,6 +61,9 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	process.reportError = function (e){
+		var caught;
+		if (!caught) caught = process.emit('uncaughtException', e);
+		if (caught) return;
 		print(e.stack || e);
 		process.reallyExit(1);
 	};
@@ -224,8 +242,9 @@ if (typeof Number.isFinite !== 'function') {
 		}
 	};
 
+	var nextTickQueue = [];
 	startup.nextTick = function(){
-		var nextTickQueue = [];
+
 
 		var kLength   = 0;
 		var kIndex    = 0;
@@ -311,22 +330,22 @@ if (typeof Number.isFinite !== 'function') {
 			return fn;
 		};
 
-		global.clearTimeout = global.clearInterval = function(timer) {
+		global.setImmediate = function(fn, timeout) {
+			var h = loop.handle_init(process.main_loop, fn);
+			fn.timerHandle = h;
+			fn.unref = function(){
+				loop.handle_unref(h);
+			};
+			loop.timer_start(h, 1, 0);
+			return fn;
+		};
+
+		global.clearImmediate = global.clearTimeout = global.clearInterval = function(timer) {
 			if (!timer.timerHandle){
 				throw new Error("clearing Timer Error");
 			}
 			loop.handle_close(timer.timerHandle);
 			timer.timerHandle = null;
-		};
-
-		global.setImmediate = function() {
-			var t = NativeModule.require('timers');
-			return t.setImmediate.apply(this, arguments);
-		};
-
-		global.clearImmediate = function() {
-			var t = NativeModule.require('timers');
-			return t.clearImmediate.apply(this, arguments);
 		};
 	};
 
@@ -488,28 +507,25 @@ if (typeof Number.isFinite !== 'function') {
 		loop.handle_unref(gcHandle);
 		loop.timer_start(gcHandle, 5000, 5000);
 
-		try {
-			var i = 0;
-			var n = 0;
-			while(1){
-
-				for (i = 0; i < 16; i++){
+		(function _starter(){
+			try {
+				var i = 0;
+				var n = 0;
+				while(1){
 					process._tickCallBack();
 					n = loop.run(main_loop, 1);
+					if (nextTickQueue.length) continue;
 					if (n == 0) break;
+					process.sleep(1);
 				}
-
-				process._tickCallBack();
-				n = loop.run(main_loop, 1);
-				if (n == 0) break;
-				process.sleep(1);
+				process.emit('exit', 0);
+			} catch (e){
+				process.reportError(e);
+				// if we reached here then error has been handeled
+				// by uncaughtException, so redo our loop
+				_starter();
 			}
-
-			// loop.run(main_loop, 0);
-			process.emit('exit', 0);
-		} catch (e){
-			process.reportError(e);
-		}
+		})();
 	};
 
 	var r = NativeModule.require('module');

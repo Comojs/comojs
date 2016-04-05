@@ -63,10 +63,14 @@ exports.getaddrinfo = function(req, hostname, family, flags){
 		syscall.freeaddrinfo(freePTR);
 	}
 
-	if (status > 0){
-		status = errno.errname(status) || 'errno(' + errno.ENOENT + ')';
+	if (status){
+		var errname = errno.errname(status);
+		switch (errname){
+			case 'WSAHOST_NOT_FOUND' : status = 'ENOTFOUND'; break;
+			case 'ENOENT' : status = 'ENOTFOUND'; break;
+			default : status = 'errno(' + status + ')';
+		}
 	}
-
 	process.MakeCallback(req, 'oncomplete', status, addrs);
 };
 

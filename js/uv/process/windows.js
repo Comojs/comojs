@@ -320,6 +320,7 @@ Process.prototype.init_stdio = function (container, fds, i) {
 			var inherit_handle = -1;
 			if (i > 2) {
 				inherit_handle = uv.make_inheritable(fh);
+				inherit_handle = uv.duplicate_handle(inherit_handle);
 			} else {
 				inherit_handle = uv.duplicate_handle(fh);
 			}

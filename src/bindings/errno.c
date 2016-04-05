@@ -426,6 +426,10 @@ static const duk_number_list_entry como_errno_errors[] = {
         COMO_DEFINE_CONSTANT(EXDEV)
     #endif
 
+    #ifdef WSAEHOSTUNREACH
+        COMO_DEFINE_CONSTANT(WSAEHOSTUNREACH)
+    #endif
+
     #ifdef WSAHOST_NOT_FOUND
         COMO_DEFINE_CONSTANT(WSAHOST_NOT_FOUND)
     #endif
@@ -434,8 +438,16 @@ static const duk_number_list_entry como_errno_errors[] = {
         COMO_DEFINE_CONSTANT(WSATYPE_NOT_FOUND)
     #endif
 
+    #ifdef WSAEALREADY
+        COMO_DEFINE_CONSTANT(WSAEALREADY)
+    #endif
+
     #ifdef WSAEINVAL
     { "WSAEINVAL"          , WSAEINVAL},
+    #endif
+
+    #ifdef WSAEINVAL
+    { "WSAEINTR"          , WSAEINTR},
     #endif
 
     #ifdef ELOOP
@@ -455,7 +467,10 @@ COMO_METHOD(como_errno_toString) {
 
 COMO_METHOD(como_errno_translate) {
     int ERRNO = duk_get_int(ctx, 0);
-    int sys_error = como_translate_sys_error(ERRNO);
+    int sys_error = 0;
+    if (ERRNO != 0) {
+        sys_error = como_translate_sys_error(ERRNO);
+    }
     duk_push_int(ctx, sys_error);
     return 1;
 }

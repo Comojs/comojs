@@ -24,15 +24,16 @@ extern char **environ;
 
 /* ALL Bindings ar directly included from main.h */
 static const duk_function_list_entry bindings_funcs[] = {
-	{ "constants"   , init_system_constants,  0},
-	{ "C"           , init_binding_C,         0},
-	{ "syscall"     , init_binding_syscall,   0},
-	{ "buffer"      , init_binding_buffer,    0},
-	{ "loop"        , init_binding_loop,      0},
-	{ "posix"       , init_binding_posix,     0},
-	{ "socket"      , init_binding_socket,    0},
-	{ "errno"       , init_binding_errno,     0},
-	{ NULL          , NULL,                   0}
+	{ "constants"   , init_system_constants,   0},
+	{ "C"           , init_binding_C,          0},
+	{ "syscall"     , init_binding_syscall,    0},
+	{ "buffer"      , init_binding_buffer,     0},
+	{ "loop"        , init_binding_loop,       0},
+	{ "posix"       , init_binding_posix,      0},
+	{ "socket"      , init_binding_socket,     0},
+	{ "errno"       , init_binding_errno,      0},
+	{ "http-parser" , init_binding_httpParser, 0},
+	{ NULL          , NULL,                    0}
 };
 
 static char *_como_substring(char *string, int position, int length) {

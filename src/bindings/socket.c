@@ -223,7 +223,7 @@ COMO_METHOD(como_sock_getsockopt) {
  ============================================================================*/
 COMO_METHOD(como_sock_inet_pton4) {
 
-	int port       = duk_require_int(ctx,1);
+	int port = duk_get_int(ctx,1);
 
 	struct sockaddr_in *addr = malloc(sizeof(*addr));
 	memset(addr, 0, sizeof(*addr));
@@ -257,7 +257,7 @@ COMO_METHOD(como_sock_inet_pton4) {
  ============================================================================*/
 COMO_METHOD(como_sock_inet_pton6) {
 
-	int port = duk_require_int(ctx,1);
+	int port = duk_get_int(ctx,1);
 
 	struct sockaddr_in6 *addr = malloc(sizeof(*addr));
 	memset(addr, 0, sizeof(*addr));
@@ -848,6 +848,36 @@ COMO_METHOD(como_sock_can_read) {
 	return 1;
 }
 
+COMO_METHOD(como_sock_can_write) {
+	int fd      = duk_require_int(ctx, 0);
+
+	int hasTimeout  = 0;
+	fd_set fds;
+	struct timeval tv;
+	int retval;
+
+	if (duk_is_number(ctx, 1)) {
+		hasTimeout = 1;
+		int timeout = duk_require_int(ctx, 1);
+		tv.tv_sec = 0;
+		tv.tv_usec = timeout*1000;
+	}
+
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+
+	retval = select(fd + 1, NULL, &fds, NULL, hasTimeout ? &tv : NULL);
+
+	if (retval == -1) {
+	   COMO_SET_ERRNO_AND_RETURN(ctx, COMO_GET_LAST_ERROR);
+	} else if (retval) {
+	   duk_push_int(ctx, 1);
+	} else {
+	   duk_push_int(ctx, 0);
+	}
+
+	return 1;
+}
 
 /*=============================================================================
   sendfd/recvfd !windows
@@ -985,6 +1015,7 @@ static const duk_function_list_entry como_socket_funcs[] = {
 	{"addr_info"      , como_sock_address_info, 1},
 	{"socketpair"     , como_sock_socketpair, 0},
 	{"can_read"       , como_sock_can_read, 2},
+	{"can_write"       , como_sock_can_write, 2},
 	{"sendfd"         , como_sock_sendfd, 2},
 	{"recvfd"         , como_sock_recvfd, 3},
 	{NULL         , NULL, 0}

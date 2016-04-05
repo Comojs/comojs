@@ -1,5 +1,6 @@
 var sock    = process.binding('socket');
 var uv      = require('uv');
+var errno   = require('errno');
 
 exports.TCP = TCP;
 exports.TCPConnectWrap = TCPConnectWrap;
@@ -20,6 +21,8 @@ TCP.prototype.bind6 = TCP.prototype.bind = function(ip, port){
 		return process.errno;
 	}
 
+	this.bindPort = port;
+	this.bindAddress = ip;
 	var err = this._handle.bind(addr, 0);
 	return err;
 };
@@ -96,7 +99,7 @@ TCP.prototype.writeBinaryString = function(req, data){
 	return this.writeUtf8String(req, data.toString("binary"));
 };
 
-
+TCP.prototype.writeAsciiString =
 TCP.prototype.writeBuffer =
 TCP.prototype.writeUtf8String = function(req, data){
 	var tcp = this;
@@ -112,14 +115,53 @@ TCP.prototype.writeUtf8String = function(req, data){
 
 TCP.prototype.connect = function(req_wrap_obj, ip_address, port){
 	var tcp = this;
-	var addr = uv.ip4_addr("127.0.0.1", port);
+	var addr = uv.ip4_addr(ip_address, port);
 	if (addr === null){
-		return process.errno;
+		return errno.translate(process.errno);
 	}
 
 	var err = this._handle.connect(addr, function AfterConnect (status){
-		MakeCallback(req_wrap_obj, "oncomplete", status, tcp, req_wrap_obj, true, true);
+		MakeCallback(req_wrap_obj, "oncomplete", errno.translate(status), tcp, req_wrap_obj, true, true);
 		//req_wrap_obj.oncomplete(status, tcp, req_wrap_obj, true, true);
 	});
-	return err;
+	return errno.translate(err);
+};
+
+
+// TODO: use syscall!!
+// FIXME: handle errors
+TCP.prototype.getsockname = function(out){
+	var addr = sock.getsockname(this._handle.fd);
+	var info = sock.addr_info(addr);
+	out.address = this.bindAddress || info[0];
+	out.port    = this.bindPort    || info[1];
+	switch (sock.isIP(out.address)){
+		case 4 : out.family = 'IPv4'; break;
+		case 6 : out.family = 'IPv6'; break;
+		default : throw new Error('unknown family type');
+	}
+};
+
+TCP.prototype.getpeername = function(out){
+	var addr = sock.getpeername(this._handle.fd);
+	if (addr === null) return process.errno;
+	var peerinfo = sock.addr_info(addr);
+	if (peerinfo === null) return process.errno;
+	out.address = peerinfo[0];
+	out.port = peerinfo[1];
+	return 0;
+};
+
+TCP.prototype.setKeepAlive = function(){
+	// throw new Error('setKeepAlive');
+};
+
+TCP.prototype.unref = function(){
+	this._handle.io_watcher.unref();
+	return 0;
+};
+
+TCP.prototype.ref = function(fd){
+	this._handle.io_watcher.ref();
+	return 0;
 };
