@@ -293,11 +293,9 @@ evLoop *main_loop () {
 }
 
 static void _free_handle(evHandle *handle) {
-	if (handle == NULL) return;
 	free(handle->ev);
 	handle->ev = NULL;
 	free(handle);
-	handle = NULL;
 }
 
 void loop_run_closing_handles(evLoop *loop){
@@ -311,7 +309,7 @@ void loop_run_closing_handles(evLoop *loop){
 		if (handle->close != NULL){
 			handle->close(handle);
 		}
-		_free_handle(handle);
+		// _free_handle(handle);
 	}
 }
 
