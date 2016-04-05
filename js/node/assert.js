@@ -324,4 +324,6 @@ assert.doesNotThrow = function(block, /*optional*/message) {
   _throws.apply(this, [false].concat(pSlice.call(arguments)));
 };
 
-assert.ifError = function(err) { if (err) {throw err;}};
+assert.ifError = function(err) {
+  if (err) {throw new Error(err);}
+};
