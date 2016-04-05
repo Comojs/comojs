@@ -111,7 +111,7 @@ void dump_stack(duk_context *ctx, const char *name) {
 #include "bindings/posix.c"
 #include "bindings/socket.c"
 #include "bindings/errno.c"
-
+#include "bindings/http-parser.c"
 
 #ifdef _WIN32
 	#define PLATFORM "win32"

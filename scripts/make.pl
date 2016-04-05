@@ -27,7 +27,8 @@ print Dumper $cc;
 
 my @files = (
 	getFile("../libs/duktape/duktape.c"),
-	getFile("../src/loop/core.c")
+	getFile("../src/loop/core.c"),
+	getFile("../libs/http/http_parser.c")
 );
 
 # if (!$compileOptions{'-DCOMO_NO_THREADS'}){
