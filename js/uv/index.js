@@ -409,7 +409,7 @@ var protobuf = C.Struct.create({
 	target : 'uint32',
 	pid    : 'uint32',
 	handle : 'uint32',
-	pad    :  1024 * 6,
+	pad    :  1024 * 8,
 	end    : 'uint16'
 });
 
