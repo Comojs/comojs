@@ -68,7 +68,7 @@ node modules
 - [x] timers
 - [x] net
 - [x] child_process
-- [ ] dns (partial)
+- [x] dns (partial)
 - [ ] tty
-- [ ] http
+- [x] http
 - [ ] https
