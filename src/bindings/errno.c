@@ -438,8 +438,16 @@ static const duk_number_list_entry como_errno_errors[] = {
         COMO_DEFINE_CONSTANT(WSATYPE_NOT_FOUND)
     #endif
 
+    #ifdef WSAEALREADY
+        COMO_DEFINE_CONSTANT(WSAEALREADY)
+    #endif
+
     #ifdef WSAEINVAL
     { "WSAEINVAL"          , WSAEINVAL},
+    #endif
+
+    #ifdef WSAEINVAL
+    { "WSAEINTR"          , WSAEINTR},
     #endif
 
     #ifdef ELOOP
