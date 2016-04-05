@@ -242,8 +242,9 @@ if (typeof Number.isFinite !== 'function') {
 		}
 	};
 
+	var nextTickQueue = [];
 	startup.nextTick = function(){
-		var nextTickQueue = [];
+
 
 		var kLength   = 0;
 		var kIndex    = 0;
@@ -511,20 +512,12 @@ if (typeof Number.isFinite !== 'function') {
 				var i = 0;
 				var n = 0;
 				while(1){
-
-					for (i = 0; i < 16; i++){
-						process._tickCallBack();
-						n = loop.run(main_loop, 1);
-						if (n == 0) break;
-					}
-
 					process._tickCallBack();
 					n = loop.run(main_loop, 1);
+					if (nextTickQueue.length) continue;
 					if (n == 0) break;
 					process.sleep(1);
 				}
-
-				// loop.run(main_loop, 0);
 				process.emit('exit', 0);
 			} catch (e){
 				process.reportError(e);
