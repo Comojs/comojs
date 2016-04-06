@@ -71,7 +71,7 @@ if (typeof Number.isFinite !== 'function') {
 		var caught;
 		if (!caught) caught = process.emit('uncaughtException', e);
 		if (caught) return;
-		print(e.stack || e);
+		print(e && e.stack ? e.stack : e);
 		process.reallyExit(1);
 	};
 
@@ -530,16 +530,8 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	NativeModule.wrapper = [
-		'(function (exports, require, module, __filename, __dirname) {' +
-			'var fn = (function(){',
-			//source here
-			'\n});' +
-			'try {' +
-				'fn();\n' +
-			'} catch (e){\n' +
-				'process.reportError(e);\n' +
-			'};\n'+
-		'});'
+		'(function (exports, require, module, __filename, __dirname) { ',
+		'\n});'
 	];
 
 	NativeModule.prototype.compile = function() {
@@ -549,7 +541,7 @@ if (typeof Number.isFinite !== 'function') {
 		try {
 			fn(this.exports, NativeModule.require, this, this.filename);
 		} catch(e){
-			process.reallyExit(1);
+			process.reportError(e);
 		}
 		this.loaded = true;
 	};

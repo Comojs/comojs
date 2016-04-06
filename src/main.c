@@ -187,8 +187,8 @@ COMO_METHOD(como_process_eval) {
 	const char *filename = duk_get_string(ctx, 1);
 	duk_push_string(ctx, filename);
 	if (duk_pcompile_string_filename(ctx, 0, buf)){
+		printf("FATAL EXCEPTION: %s\n", filename);
 		printf("%s\n", duk_safe_to_string(ctx, -1));
-		printf("%s\n", duk_safe_to_string(ctx, -2));
 		duk_destroy_heap(ctx);
 		exit(1);
 	}
@@ -330,7 +330,7 @@ duk_context *como_create_new_heap (int argc, char *argv[], void *error_handle) {
 void como_run (duk_context *ctx){
 	#ifdef COMO_LOCAL_JS
 		if (duk_peval_file(ctx, "js/main.js") != 0) {
-			printf("%s\n", duk_safe_to_string(ctx, -2));
+			printf("%s\n", duk_safe_to_string(ctx, -1));
 			duk_destroy_heap(ctx);
 			exit(1);
 		}
@@ -338,7 +338,7 @@ void como_run (duk_context *ctx){
 		duk_push_string(ctx, como_main_js);
 		duk_json_decode(ctx, -1);
 		if (duk_peval(ctx) != 0) {
-			printf("%s\n", duk_safe_to_string(ctx, -2));
+			printf("%s\n", duk_safe_to_string(ctx, -1));
 			duk_destroy_heap(ctx);
 			exit(1);
 		}
