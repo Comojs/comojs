@@ -185,3 +185,10 @@ if (process.env.NODE_COMMON_PIPE) {
     // Ignore.
   }
 }
+
+exports.indirectInstanceOf = function(obj, cls) {
+  if (obj instanceof cls) { return true; }
+  var clsChain = protoCtrChain(cls.prototype);
+  var objChain = protoCtrChain(obj);
+  return objChain.slice(-clsChain.length) === clsChain;
+};
