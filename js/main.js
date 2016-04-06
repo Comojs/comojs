@@ -33,6 +33,13 @@ if (typeof Object.prototype.__defineGetter__ === 'undefined') {
 	});
 }
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position){
+		position = position || 0;
+		return this.substr(position, searchString.length) === searchString;
+	};
+}
+
 // Number.isFinite polyfill
 // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isfinite
 if (typeof Number.isFinite !== 'function') {
@@ -64,7 +71,7 @@ if (typeof Number.isFinite !== 'function') {
 		var caught;
 		if (!caught) caught = process.emit('uncaughtException', e);
 		if (caught) return;
-		print(e.stack || e);
+		print(e && e.stack ? e.stack : e);
 		process.reallyExit(1);
 	};
 
@@ -94,7 +101,6 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	process.MakeCallback = function (handle, string, a, b, c, d, e) {
-		// process._tickCallBack();
 		if (!handle[string]) return;
 		process.nextTick(function(){
 			handle[string](a, b, c, d, e);
@@ -102,7 +108,6 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	function startup () {
-
 		//in case of using tcc by running como.bat the first argument will
 		//be main.c so we need to replace this
 		if (process.argv[0] == 'src/main.c') {
@@ -123,22 +128,54 @@ if (typeof Number.isFinite !== 'function') {
 		var path = NativeModule.require('path');
 		process.execPath = path.resolve(process.cwd() + '/' + process.argv[0]);
 		// process.argv[0] = process.execPath;
-		global.Buffer = NativeModule.require('buffer').Buffer;
 
+		global.Buffer = NativeModule.require('buffer').Buffer;
 		startup.processAssert();
 		startup.globalTimeouts();
 		startup.syscallAndUV();
-
 		startup.processKillAndExit();
-
 		startup.nextTick();
-
 		// startup.processStdio();
 		startup.globalConsole();
-
 		startup.processChannel();
-		//initiate go globals
-		//NativeModule.require('go/globals');
+
+		if (process.argv[1] == 'debug') {
+			// Start the debugger agent
+			// var d = NativeModule.require('_debugger');
+			// d.start();
+		} else if (process.argv[1] == '--debug-agent') {
+			// Start the debugger agent
+			// var d = NativeModule.require('_debug_agent');
+			// d.start();
+		} else {
+			// There is user code to be run
+			// If this is a worker in cluster mode, start up the communication
+			// channel. This needs to be done before any user code gets executed
+			// (including preload modules).
+			if (process.argv[1] && process.env.NODE_UNIQUE_ID) {
+				var cluster = NativeModule.require('cluster');
+				cluster._setupWorker();
+				// Make sure it's not accidentally inherited by child processes.
+				delete process.env.NODE_UNIQUE_ID;
+			}
+
+			if (process._eval != null) {
+				// TODO eval
+				// User passed '-e' or '--eval' arguments to Node.
+				// startup.preloadModules();
+				// evalScript('[eval]');
+			} else if (process.argv[1]) {
+				// make process.argv[1] into a full path
+				process.argv[1] = path.resolve(process.argv[1]);
+				var Module = NativeModule.require('module');
+				try {
+					Module.runMain();
+				} catch(e){ process.reportError(e) }
+			} else {
+				//TODO repl
+			}
+		}
+		startup.loop();
 	}
 
 	// initiate uv and syscall with some related functions
@@ -272,10 +309,6 @@ if (typeof Number.isFinite !== 'function') {
 			// on the way out, don't bother. it won't get fired anyway.
 			if (process._exiting) return;
 
-			// if (kLength > 500){
-			//     process._tickCallBack();
-			// }
-
 			kLength++;
 			nextTickQueue.push({
 				callback : callback,
@@ -283,7 +316,7 @@ if (typeof Number.isFinite !== 'function') {
 			});
 		};
 
-		process._tickCallBack = function(){
+		process._tickCallback = function(){
 			while (kIndex < kLength){
 				var tock = nextTickQueue[kIndex++];
 				var callback = tock.callback;
@@ -314,7 +347,6 @@ if (typeof Number.isFinite !== 'function') {
 
 		global.setTimeout = function(fn, timeout, a, b, c) {
 			var h = loop.handle_init(_default, fn);
-
 			fn.timerHandle = h;
 			loop.timer_start(h, timeout, 0);
 			return fn;
@@ -400,6 +432,36 @@ if (typeof Number.isFinite !== 'function') {
 		});
 	};
 
+	startup.loop = function(){
+		var main_loop = process.main_loop;
+		var loop = process.binding('loop');
+		var gcHandle = loop.handle_init(main_loop, function(){
+			Duktape.gc();
+		});
+		loop.handle_unref(gcHandle);
+		loop.timer_start(gcHandle, 5000, 5000);
+
+		(function _starter(){
+			try {
+				var i = 0;
+				var n = 0;
+				while(1){
+					process._tickCallback();
+					n = loop.run(main_loop, 1);
+					if (nextTickQueue.length) continue;
+					if (n == 0) break;
+					process.sleep(1);
+				}
+				process.emit('exit', 0);
+			} catch (e){
+				process.reportError(e);
+				// if we reached here then error has been handeled
+				// by uncaughtException, so redo our loop
+				_starter();
+			}
+		})();
+	};
+
 	var NativeModule = process.NativeModule = function(id) {
 		this.filename = NativeModule._source[id];// + '.js';
 		this.id = id;
@@ -468,16 +530,8 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	NativeModule.wrapper = [
-		'(function (exports, require, module, __filename, __dirname) {' +
-			'var fn = (function(){',
-			//source here
-			'\n});' +
-			'try {' +
-				'fn();\n' +
-			'} catch (e){\n' +
-				'process.reportError(e);\n' +
-			'};\n'+
-		'});'
+		'(function (exports, require, module, __filename, __dirname) { ',
+		'\n});'
 	];
 
 	NativeModule.prototype.compile = function() {
@@ -487,7 +541,7 @@ if (typeof Number.isFinite !== 'function') {
 		try {
 			fn(this.exports, NativeModule.require, this, this.filename);
 		} catch(e){
-			process.reallyExit(1);
+			process.reportError(e);
 		}
 		this.loaded = true;
 	};
@@ -496,44 +550,13 @@ if (typeof Number.isFinite !== 'function') {
 		NativeModule._cache[this.id] = this;
 	};
 
-	startup();
-
-	var _run_looop = function(){
-		var main_loop = process.main_loop;
-		var loop = process.binding('loop');
-		var gcHandle = loop.handle_init(main_loop, function(){
-			Duktape.gc();
-		});
-		loop.handle_unref(gcHandle);
-		loop.timer_start(gcHandle, 5000, 5000);
-
-		(function _starter(){
-			try {
-				var i = 0;
-				var n = 0;
-				while(1){
-					process._tickCallBack();
-					n = loop.run(main_loop, 1);
-					if (nextTickQueue.length) continue;
-					if (n == 0) break;
-					process.sleep(1);
-				}
-				process.emit('exit', 0);
-			} catch (e){
-				process.reportError(e);
-				// if we reached here then error has been handeled
-				// by uncaughtException, so redo our loop
-				_starter();
-			}
-		})();
+	NativeModule.nonInternalExists = function(id) {
+		return NativeModule.exists(id) && !NativeModule.isInternal(id);
 	};
 
-	var r = NativeModule.require('module');
-	var argv = process.argv;
-	if (argv[1]) {
-		process.main = true;
-		r.require(process.argv[1]);
-	}
+	NativeModule.isInternal = function(id) {
+		return id.startsWith('internal/');;
+	};
 
-	_run_looop();
+	startup();
 })(process);
