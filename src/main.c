@@ -100,6 +100,20 @@ COMO_METHOD(como_process_isFile) {
 }
 
 /**
+  * process.stat(path/filename);
+**************************************************************************/
+COMO_METHOD(como_process_stat) {
+	const char *filename = duk_get_string(ctx, 0);
+	struct stat buffer;
+	int rc = stat (filename, &buffer);
+	if (rc == 0) {
+		rc = !!(buffer.st_mode & S_IFDIR);
+	}
+	duk_push_int(ctx, rc);
+	return 1;
+}
+
+/**
   * process.readFile(filename);
 **************************************************************************/
 COMO_METHOD(como_process_readFile) {
@@ -140,14 +154,14 @@ COMO_METHOD(como_process_readFile) {
   * process.sleep(num);
 ******************************************************************************/
 COMO_METHOD(como_process_sleep) {
-    int milliseconds = duk_get_int(ctx, 0);
-    duk_pop(ctx);
-    #ifdef _WIN32
-        Sleep(milliseconds);
-    #else
-        usleep(1000 * milliseconds);
-    #endif
-    return 1;
+	int milliseconds = duk_get_int(ctx, 0);
+	duk_pop(ctx);
+	#ifdef _WIN32
+		Sleep(milliseconds);
+	#else
+		usleep(1000 * milliseconds);
+	#endif
+	return 1;
 }
 
 
@@ -198,7 +212,7 @@ COMO_METHOD(como_process_exit) {
   * process.dlOpen(shared_library);
 **************************************************************************/
 COMO_METHOD(como_process_dlOpen) {
-	const char *ModuleName = duk_get_string(ctx, 0);
+	const char *ModuleName = duk_get_string(ctx, 1);
 
 	void * handle = dlopen(ModuleName, RTLD_LAZY);
 	if (!handle){
@@ -232,10 +246,11 @@ COMO_METHOD(como_process_dlOpen) {
 **************************************************************************/
 const duk_function_list_entry process_funcs[] = {
 	{"isFile", como_process_isFile,        1},
+	{"stat", como_process_stat,            1},
 	{"readFile", como_process_readFile,    1},
 	{"cwd", como_process_cwd,              0},
 	{"eval", como_process_eval,            2},
-	{"dlOpen", como_process_dlOpen,        2},
+	{"dlopen", como_process_dlOpen,        2},
 	{"reallyExit", como_process_exit,      1},
 	{"sleep", como_process_sleep,          1},
 	{NULL, NULL,                           0}
