@@ -8,11 +8,6 @@
 //===========================================================
 
 
-// Macro custom exported constants for this platform
-//===========================================================
-#	define COMO_EXPORTED_SYSCALL_CONSTANTS
-//===========================================================
-
 COMO_METHOD(como_syscall_LoadLibrary) {
 	HINSTANCE hinst;
 	if (duk_is_null(ctx, 0)){
