@@ -6,31 +6,15 @@
 #endif
 
 
-COMO_METHOD(como_syscall_pointerToBuffer){
-	char *buf  = duk_require_buffer_data(ctx, 0, NULL);
-	char *st   = duk_require_buffer_data(ctx, 1, NULL);
-	int offset = duk_require_int(ctx, 2);
-
-	/* save structure address at buffer offset buf[offset] = struct address; */
-	void **p1 = (void *)&buf[offset];
-	void **p2 = (void *)&st;
-	*((duk_uintptr_t *)p1) = *((duk_uintptr_t *)p2);
-	return 1;
-}
-
-
 static const duk_function_list_entry como_syscall_funcs[] = {
 
+	// these defined in syscall/[platform].h
 	{"LoadLibrary", como_syscall_LoadLibrary,            1},
 	{"GetProcAddress", como_syscall_GetProcAddress,      2},
-	{"pointerToBuffer", como_syscall_pointerToBuffer,    4},
-
-	// como_syscall_syscall defined in syscall/[platform].h
 	{"syscall", como_syscall_syscall,          DUK_VARARGS},
 
 	// expand syscall functions from platforms
 	COMO_EXPORTED_SYSCALL_FUNCTIONS
-
 	{NULL, NULL, 0}
 };
 
