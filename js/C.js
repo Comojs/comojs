@@ -131,10 +131,10 @@ function normalize_fields(fields){
 	Object.keys(fields).forEach(function(name) {
 		var type = fields[name];
 
-		// number field value
+		// number field value [buffer]
 		if (typeof type === 'number'){
 			fields[name] = {
-				fn     : function(){ throw new Error('number field struct') },
+				fn     : C.buffer,
 				size   : type,
 				offset : offset
 			};
@@ -160,10 +160,10 @@ function normalize_fields(fields){
 				fn : function(buf, off, size, v){
 					if (typeof v === 'undefined'){
 						// C.copy_structs(struct, 0, struct.length, Buffer(buf).slice(off,size));
-						C.copy_buffer_data(struct, Buffer(buf).slice(off,size));
+						C.buffer(struct, Buffer(buf).slice(off,size));
 						return struct;
 					} else {
-						C.copy_structs(buf, off, size, v);
+						C.buffer(buf, off, size, v);
 					}
 				},
 				size   : type.byteLength,
@@ -194,7 +194,7 @@ C.Struct.create = function(obj){
 	length     = length || fields.size;
 	var structure = function(v){
 		var buf = new ArrayBuffer(length);
-		if (v) C.copy_buffer_data(buf, v);
+		if (v) C.buffer(buf, v);
 		Object.setPrototypeOf(buf, fields);
 		Object.preventExtensions(buf);
 		return buf;
