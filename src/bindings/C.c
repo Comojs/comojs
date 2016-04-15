@@ -149,13 +149,27 @@ COMO_METHOD(como_c_buffer) {
 		size         = duk_require_int(ctx, 2);
 	}
 
+	// [ GETTER ]
 	// C.buffer(struct, offset, size);
 	// return buffer data at offset
-	if (duk_is_undefined(ctx, 3)){
-		assert(0 && "TODO");
+	type = duk_get_type(ctx, 3);
+	if (type == DUK_TYPE_UNDEFINED){
+		duk_pop(ctx);
+		duk_eval_string(ctx, "DataView");
+		duk_insert(ctx, 0); // stack [DataView .. Buffer .. offset .. size]
+		duk_pnew(ctx, 3);
+		return 1;
+	}
+	// [ SETTER ]
+	// string value passed
+	else if (type == DUK_TYPE_STRING){
+		buf2 = (duk_int8_t *)duk_get_string(ctx, 3);
+	}
+	// else must be a buffer
+	else {
+		buf2 = duk_require_buffer_data(ctx, 3, NULL);
 	}
 
-	buf2 = duk_require_buffer_data(ctx, 3, NULL);
 	if ( (offset + size) >  bufLen ) {
 		duk_error(ctx, DUK_ERR_RANGE_ERROR, "offset + size out of range");
 	}

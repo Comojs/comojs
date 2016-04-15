@@ -122,11 +122,12 @@ function create_struct_fields(fields){
 }
 
 
-function normalize_fields(fields){
-	var throwField = function(type){
-		throw new Error('unknown field type ' + type);
-	};
+function _throwFieldError (type){
+	throw new Error('unknown field type ' + type);
+};
 
+
+function normalize_fields(fields){
 	var offset = 0;
 	Object.keys(fields).forEach(function(name) {
 		var type = fields[name];
@@ -140,11 +141,10 @@ function normalize_fields(fields){
 			};
 			offset += fields[name].size;
 		}
-
 		// string field type [uint32, int32, int, ...]
 		else if (typeof type === 'string'){
 			var clone = _typesMap[type];
-			if (!clone) throwField(type);
+			if (!clone) _throwFieldError(type);
 			fields[name] = {
 				fn     : clone.fn,
 				size   : clone.size,
@@ -152,31 +152,25 @@ function normalize_fields(fields){
 			};
 			offset += fields[name].size;
 		}
-
 		// function field value, passed as another struct
 		else if (typeof type === 'function' && type.byteLength){
 			var struct = new type();
 			fields[name] = {
-				fn : function(buf, off, size, v){
-					if (typeof v === 'undefined'){
-						// C.copy_structs(struct, 0, struct.length, Buffer(buf).slice(off,size));
-						C.buffer(struct, Buffer(buf).slice(off,size));
-						return struct;
-					} else {
-						C.buffer(buf, off, size, v);
-					}
+				fn : function(buf, offset, size, v){
+					var buf = new DataView(buf, offset, size);
+					Object.setPrototypeOf(buf, struct);
+					return buf;
 				},
 				size   : type.byteLength,
 				offset : offset
 			};
 			offset += fields[name].size;
 		}
-
 		// object, most likely passed by C struct
 		else {
 			fields[name] = (function(){
 				var obj = fields[name];
-				obj.fn  = _typesMap[obj.type] ? _typesMap[obj.type].fn : throwField(obj.type);
+				obj.fn  = _typesMap[obj.type] ? _typesMap[obj.type].fn : _throwFieldError(obj.type);
 				delete obj.type;
 				return obj;
 			})();
@@ -184,6 +178,39 @@ function normalize_fields(fields){
 	});
 	return fields;
 }
+
+
+function Union (obj){
+	var self = this;
+	obj = normalize_fields(obj);
+	var size = 0;
+	Object.keys(obj).forEach(function(name) {
+		// get largest member size
+		if (obj[name].size > size){
+			size = obj[name].size;
+		}
+		// force offset at 0
+		obj[name].offset = 0;
+	});
+	this.size = size;
+
+	var fields = create_struct_fields(obj);
+
+	this.fn = function(buf, offset, size, val){
+		buf = buf || new ArrayBuffer(self.size);
+		buf = new DataView(buf, offset || 0, size || self.size);
+		Object.setPrototypeOf(buf, fields);
+		Object.preventExtensions(buf);
+		return buf;
+	};
+	this.fn.byteLength = size;
+	return this.fn;
+}
+
+
+C.union = function(obj){
+	return new Union(obj);
+};
 
 
 C.Struct.create = function(obj){
