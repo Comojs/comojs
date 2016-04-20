@@ -108,7 +108,6 @@ exports.createReadableStdioStream = function(fd){
 			return;
 		stdin._readableState.reading = false;
 		stdin._handle.reading = false;
-		console.log(stdin._handle);
 		stdin._handle.readStop();
 	});
 
