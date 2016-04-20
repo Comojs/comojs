@@ -121,11 +121,11 @@ module.exports = (function(platform){
 	}
 
 	{	//File types
-		FILE_TYPE_CHAR    = 0x0002
-		FILE_TYPE_DISK    = 0x0001
-		FILE_TYPE_PIPE    = 0x0003
-		FILE_TYPE_REMOTE  = 0x8000
-		FILE_TYPE_UNKNOWN = 0x0000
+		exports.FILE_TYPE_CHAR    = 0x0002
+		exports.FILE_TYPE_DISK    = 0x0001
+		exports.FILE_TYPE_PIPE    = 0x0003
+		exports.FILE_TYPE_REMOTE  = 0x8000
+		exports.FILE_TYPE_UNKNOWN = 0x0000
 	}
 
 
@@ -289,7 +289,7 @@ module.exports = (function(platform){
 	var WriteFile     = kernel.GetProcAddress('WriteFile', 0);
 	var GetTempPath   = kernel.GetProcAddress('GetTempPathW');
 	var WriteConsole  = kernel.GetProcAddress('WriteConsoleW');
-	var GetFileType   = kernel.GetProcAddress('GetFileType', 0);
+	var GetFileType   = kernel.GetProcAddress('GetFileType', 0, 1);
 
 	var SetHandleInformation = kernel.GetProcAddress('SetHandleInformation', 0);
 	var GetFileInformationByHandle = kernel.GetProcAddress('GetFileInformationByHandle', 0);
@@ -305,6 +305,7 @@ module.exports = (function(platform){
 	var GetCurrentDirectory =  kernel.GetProcAddress('GetCurrentDirectoryW', 0);
 	var GetEnvironmentVariable =  kernel.GetProcAddress('GetEnvironmentVariableW', 0);
 	var CreatePipe = kernel.GetProcAddress('CreatePipe', 0);
+	var GetConsoleMode = kernel.GetProcAddress('GetConsoleMode', 0, 2);
 
 	// exported raw syscall functions
 	//===========================================================
@@ -328,6 +329,7 @@ module.exports = (function(platform){
 	  exports.WriteFile = WriteFile;
 	  exports.GetFileInformationByHandle = GetFileInformationByHandle;
 	  exports.FileTimeToSystemTime  = FileTimeToSystemTime;
+	  exports.GetFileType = GetFileType;
 	//===========================================================
 
 
@@ -595,5 +597,15 @@ module.exports = (function(platform){
 
 		//(hi << 32) + rlo
 		return ( hi.uint32.LShift(32) ) + rlo;
+	};
+
+	//===========================================================
+	  var consoleMode = new C.void( C.sizeOf.uint32 );
+	  exports.GetConsoleMode = function(handle){
+	//===========================================================
+		if (GetConsoleMode(handle, consoleMode) === null){
+			return null;
+		}
+		return consoleMode.uint32;
 	};
 });

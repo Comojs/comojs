@@ -59,6 +59,7 @@ module.exports = (function(platform){
     var open  = libc.GetProcAddress('open', -1, 3);
     var getuid = libc.GetProcAddress('getuid', -1, 0);
     var setuid = libc.GetProcAddress('setuid', -1, 1);
+    var isatty = libc.GetProcAddress('isatty', -1, 1);
     var getaddrinfo   = libc.GetProcAddress('getaddrinfo');
     var freeaddrinfo   = libc.GetProcAddress('freeaddrinfo');
 
@@ -87,6 +88,7 @@ module.exports = (function(platform){
 	  exports.getuid = getuid;
 	  exports.getaddrinfo = getaddrinfo;
 	  exports.freeaddrinfo = freeaddrinfo;
+	  exports.isatty = isatty;
 	//===========================================================
 
 	// cloexec
