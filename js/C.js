@@ -10,6 +10,10 @@ C.LE = (function() {
 })();
 
 var _typesMap = {
+	uint : {
+		fn   : C.uint,
+		size : C.sizeOf.int
+	},
 	uint8 : {
 		fn   : C.uint8,
 		size : C.sizeOf.int8

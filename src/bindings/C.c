@@ -83,6 +83,7 @@ COMO_METHOD(como_c_int8)   { COMO_C_SIGNED_METHOD(duk_int8_t);     }
 COMO_METHOD(como_c_int16)  { COMO_C_SIGNED_METHOD(duk_int16_t);    }
 COMO_METHOD(como_c_int32)  { COMO_C_SIGNED_METHOD(duk_int32_t);    }
 
+COMO_METHOD(como_c_uint)   { COMO_C_USIGNED_METHOD(duk_uint_t);    }
 COMO_METHOD(como_c_uint8)  { COMO_C_USIGNED_METHOD(duk_uint8_t);   }
 COMO_METHOD(como_c_uint16) { COMO_C_USIGNED_METHOD(duk_uint16_t);  }
 COMO_METHOD(como_c_uint32) { COMO_C_USIGNED_METHOD(duk_uint32_t);  }
@@ -245,7 +246,6 @@ COMO_METHOD(como_struct_sockaddr6) {
 	return 1;
 }
 
-
 /*=============================================================================
   C export functions list
  ============================================================================*/
@@ -259,6 +259,7 @@ static const duk_function_list_entry como_C_funcs[] = {
 	{"int8", como_c_int8,                        4},
 	{"int16", como_c_int16,                      4},
 	{"int32", como_c_int32,                      4},
+	{"uint", como_c_uint,                        4},
 	{"uint8", como_c_uint8,                      4},
 	{"uint16", como_c_uint16,                    4},
 	{"uint32", como_c_uint32,                    4},
