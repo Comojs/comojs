@@ -21,6 +21,9 @@
 	"uv/process/windows"  : "js/uv/process/windows.js",
 	"uv/process/unix"     : "js/uv/process/unix.js",
 	"uv/tty"              : "js/uv/tty.js",
+	"uv/tty/windows"      : "js/uv/tty/windows.js",
+	"uv/tty/ansi"         : "js/uv/tty/ansi.js",
+	"uv/tty/linux"        : "js/uv/tty/linux.js",
 
 	"internal/util"       : "js/node/internal/util.js",
 	"internal/linkedlist" : "js/node/internal/linkedlist.js",
@@ -73,5 +76,6 @@
 	"tty_wrap"            : "js/node_wrap/tty_wrap.js",
 	"spawn_sync"          : "js/node_wrap/spawn_sync.js",
 	"process_wrap"        : "js/node_wrap/process_wrap.js",
-	"uv_wrap"             : "js/node_wrap/uv.js"
+	"uv_wrap"             : "js/node_wrap/uv.js",
+	"setup/stdio"         : "js/node/setup/stdio.js"
 }

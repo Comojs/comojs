@@ -1,19 +1,18 @@
-// var bindings = process.binding('tty');
-// var uv       = require('uv');
-
-// exports.guessHandleType = bindings.guessHandleType;
+var uv  = require('uv');
 
 function TTY (fd, readable){
 	this._handle = new uv.TTY(fd, readable);
 	this.readStart(function(){});
 };
 
+TTY.prototype.writeAsciiString =
+TTY.prototype.writeBuffer =
 TTY.prototype.writeUtf8String = function(req, data){
 	this._handle.write(data);
 };
 
 TTY.prototype.getWindowSize = function(arr){
-	var winsize = bindings.getWindowSize();
+	var winsize = this._handle.get_winsize();
 	if (!winsize){
 		return process.errno;
 	}
@@ -28,7 +27,7 @@ TTY.prototype.readStart = function(){
 	this._handle.read_start(function(err, buf){
 		var len;
 		if (err){
-			len = err;
+			len = err > 0 ? -err : err;
 		} else if (buf){
 			len = buf.length;
 		} else { len = 0; }
@@ -45,9 +44,17 @@ TTY.prototype.setRawMode = function(mode){
 	this._handle.set_mode(mode ? 1 : 0);
 };
 
+TTY.prototype.close = function(cb){
+	this._handle.close();
+	setTimeout(cb, 1);
+};
+
 exports.TTY = TTY;
 
-// TODO
 exports.guessHandleType = function(h){
-	return 'TCP';
+	return uv.guess_handle(h);
+};
+
+exports.isTTY = function(h){
+	return uv.guess_handle(h) === 'TTY';
 };

@@ -17,7 +17,7 @@ module.exports = (function(platform){
 	});
 
 	//===========================================================
-	  var Stat_t                                   // STRUCT //
+	  var Stat_t                                     // STRUCT //
 	//===========================================================
 	= exports.Stat_t
 	= C.Struct.create({
@@ -41,6 +41,17 @@ module.exports = (function(platform){
 		Ino       : 'uint64'
 	});
 
+	//===========================================================
+	  var WinSize                                    // STRUCT //
+	//===========================================================
+	= exports.WinSize
+	= C.Struct.create({
+		ws_row    : 'uint16',
+		ws_col    : 'uint16',
+		ws_xpixel : 'uint16',
+		ws_ypixel : 'uint16'
+	});
+
 	var libc = exports.LoadLibrary(null);
 
 	var kill  = libc.GetProcAddress('kill', -1, 2);
@@ -62,6 +73,7 @@ module.exports = (function(platform){
     var isatty = libc.GetProcAddress('isatty', -1, 1);
     var getaddrinfo   = libc.GetProcAddress('getaddrinfo');
     var freeaddrinfo   = libc.GetProcAddress('freeaddrinfo');
+    var ioctl   = libc.GetProcAddress('ioctl', -1);
 
 	var pipe2;
 	try {
@@ -89,6 +101,7 @@ module.exports = (function(platform){
 	  exports.getaddrinfo = getaddrinfo;
 	  exports.freeaddrinfo = freeaddrinfo;
 	  exports.isatty = isatty;
+	  exports.ioctl = ioctl;
 	//===========================================================
 
 	// cloexec
