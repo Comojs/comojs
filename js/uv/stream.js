@@ -147,13 +147,12 @@ function _read (stream){
 
 		var error = process.errno;
 		if (buf === null) {
+			// EOF
 			if (error === errno.EOF){
 				stream.stream_eof("");
-				return;
 			}
-
 			/* Error */
-			if (error === errno.EAGAIN || error === errno.EWOULDBLOCK) {
+			else if (error === errno.EAGAIN || error === errno.EWOULDBLOCK) {
 				/* Wait for the next one. */
 				if (stream.flags & uv.STREAM_READING) {
 					stream.io_watcher.start(stream.fd, POLLIN);
@@ -169,8 +168,8 @@ function _read (stream){
 						stream.io_watcher.handle_stop();
 					}
 				}
-				return;
 			}
+			return;
 		} else {
 			/* Successful read */
 			if (is_ipc) {
