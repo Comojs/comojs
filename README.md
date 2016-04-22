@@ -69,6 +69,6 @@ node modules
 - [x] net
 - [x] child_process
 - [x] dns (partial)
-- [ ] tty
+- [x] tty
 - [x] http
 - [ ] https
