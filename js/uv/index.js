@@ -560,7 +560,7 @@ exports.open    = posix.open;
   exports.TCP    = require('uv/tcp');
   exports.Pipe   = require('uv/pipe');
   exports.Stream = require('uv/stream');
-  //exports.TTY    = require('uv/tty');
+  exports.TTY    = require('uv/tty');
 //===========================================================
 
 //===========================================================
@@ -569,3 +569,48 @@ exports.open    = posix.open;
 //===========================================================
 	return new uvProcess(options);
 };
+
+if (isWin){
+	exports.guess_handle = function(fd){
+		var handle = syscall.GetFdHandle(fd);
+		var type = syscall.GetFileType(handle);
+		if (type === null){
+			type = syscall.GetFileType(fd);
+			if (type === null){
+				return 'UNKNOWN_HANDLE';
+			}
+		}
+
+		switch (type){
+			case syscall.FILE_TYPE_CHAR : {
+				if (syscall.GetConsoleMode(handle) !== null){
+					return 'TTY';
+				}
+				return 'FILE'
+			}
+			case syscall.FILE_TYPE_DISK : {
+				return 'FILE'
+			}
+			case syscall.FILE_TYPE_PIPE : {
+				return 'TCP';
+			}
+		}
+
+		return 'UNKNOWN_HANDLE';
+	};
+} else {
+	var fs = require('fs');
+	exports.guess_handle = function(fd){
+		if (fd < 0) return 'UNKNOWN_HANDLE';
+
+		// tty
+		if (syscall.isatty(fd)) return 'TTY';
+
+		var st = fs.fstatSync(fd);
+		if (st.isFile()) return 'FILE';
+		if (st.isFIFO()) return 'NAMED_PIPE';
+		if (st.isSocket()) return 'TCP';
+
+		return 'UNKNOWN_HANDLE';
+	};
+}

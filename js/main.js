@@ -135,7 +135,7 @@ if (typeof Number.isFinite !== 'function') {
 		startup.syscallAndUV();
 		startup.processKillAndExit();
 		startup.nextTick();
-		// startup.processStdio();
+		startup.processStdio();
 		startup.globalConsole();
 		startup.processChannel();
 
@@ -387,7 +387,7 @@ if (typeof Number.isFinite !== 'function') {
 
 	startup.processStdio  = function() {
 
-		var stdio = NativeModule.require('./setup/stdio.js');
+		var stdio = NativeModule.require('setup/stdio');
 		var stdin, stdout, stderr;
 
 		//stdout
@@ -494,7 +494,6 @@ if (typeof Number.isFinite !== 'function') {
 		if (!NativeModule.exists(id)) {
 			var t = NativeModule.require('module');
 			var path = NativeModule.require('path');
-
 			return t.require(path.resolve(process.cwd() + '/js/' + id));
 			throw new Error('No such native module ' + id);
 		}

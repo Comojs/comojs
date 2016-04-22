@@ -1,6 +1,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/ioctl.h>
 
 // Macro custom exported functions for this platform
 //===========================================================
@@ -8,7 +9,6 @@
 	{"kill", como_syscall_kill,                     2},     \
 	{"GetLastError", como_get_last_error,           0},
 //===========================================================
-
 
 typedef int32_t *DWORD;
 typedef void *(*ptr_sysfunc)();

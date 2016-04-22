@@ -76,44 +76,12 @@ static const duk_number_list_entry como_syscall_constants[] = {
 		COMO_DEFINE_CONSTANT(WSTOPPED)
 	#endif
 
-	#ifdef F_SETFDxx
-		COMO_DEFINE_CONSTANT(F_SETFDxx)
-	#endif
-
 	#ifdef F_SETFD
 		COMO_DEFINE_CONSTANT(F_SETFD)
 	#endif
 
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
-	#endif
-
-	#ifdef F_SETFD
-		COMO_DEFINE_CONSTANT(F_SETFD)
+	#ifdef TIOCGWINSZ
+		COMO_DEFINE_CONSTANT(TIOCGWINSZ)
 	#endif
 
 	{NULL, 0}
