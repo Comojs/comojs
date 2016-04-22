@@ -18,12 +18,7 @@ for (@ARGV){
 
 # my $cc = "arm-none-eabi-gcc.exe";
 # my $cc = "/usr/local/musl/bin/musl-gcc";
-my $cc = "gcc";
-print Dumper $cc;
-
-#FIXME: building ansi.c seperately
-#since it produce errors
-#maybe we need to write our own
+my $cc = $ENV{CC} || "gcc";
 
 my @files = (
 	getFile("../libs/duktape/duktape.c"),
