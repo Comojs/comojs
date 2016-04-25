@@ -39,7 +39,7 @@ static int como__handle_close_callback (evHandle *handle) {
 	return 1;
 }
 
-void *como__handle_dispatch_cb (evHandle *handle, int mask){
+static void como__handle_dispatch_cb (evHandle *handle, int mask){
 
 	duk_context *ctx = handle->loop->data;
 
