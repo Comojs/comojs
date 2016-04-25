@@ -39,7 +39,7 @@ static int como__handle_close_callback (evHandle *handle) {
 	return 1;
 }
 
-static int como__handle_dispatch_cb (evHandle *handle, int mask){
+void *como__handle_dispatch_cb (evHandle *handle, int mask){
 
 	duk_context *ctx = handle->loop->data;
 
@@ -68,7 +68,6 @@ static int como__handle_dispatch_cb (evHandle *handle, int mask){
 			como_loop_handle_close(ctx);
 		}
 	}
-	return 1;
 }
 
 /*=============================================================================
@@ -115,15 +114,18 @@ COMO_METHOD(como_loop_run) {
  ============================================================================*/
 COMO_METHOD(como_loop_handle_init) {
 	evLoop *loop      = duk_require_pointer(ctx, 0);
-
-	evHandle *handle  = handle_init(loop, como__handle_dispatch_cb);
-	int64_t handle_id = handle->id;
-
-	duk_push_global_stash(ctx);
-	duk_get_prop_string(ctx, -1, "comoHandles");
-	duk_push_number(ctx, (double) handle_id);
-	duk_dup(ctx, 1);
-	duk_put_prop(ctx, -3); /* comoHandles[handle_id] = callback */
+	evHandle *handle;
+	if (duk_is_function(ctx, 1)){
+		handle = handle_init(loop, como__handle_dispatch_cb);
+		int64_t handle_id = handle->id;
+		duk_push_global_stash(ctx);
+		duk_get_prop_string(ctx, -1, "comoHandles");
+		duk_push_number(ctx, (double) handle_id);
+		duk_dup(ctx, 1);
+		duk_put_prop(ctx, -3); /* comoHandles[handle_id] = callback */
+	} else {
+		handle = handle_init(loop, NULL);
+	}
 
 	duk_push_pointer(ctx, handle);
 	return 1;
@@ -243,6 +245,16 @@ COMO_METHOD(como_loop_timer_start) {
 	int timeout      = duk_get_int(ctx, 1);
 	int repeat       = duk_get_int(ctx, 2);
 
+	if (duk_is_function(ctx, 3)){
+		int64_t handle_id = handle->id;
+		duk_push_global_stash(ctx);
+		duk_get_prop_string(ctx, -1, "comoHandles");
+		duk_push_number(ctx, (double) handle_id);
+		duk_dup(ctx, 3);
+		duk_put_prop(ctx, -3); /* comoHandles[handle_id] = callback */
+		handle->cb = (void *)como__handle_dispatch_cb;
+	}
+
 	timer_start(handle, timeout, repeat);
 	return 1;
 }
@@ -278,6 +290,17 @@ COMO_METHOD(como_loop_io_start) {
 	evHandle *handle = duk_require_pointer(ctx, 0);
 	int fd   = duk_get_int(ctx, 1);
 	int mask = duk_get_int(ctx, 2);
+
+	if (duk_is_function(ctx, 3)){
+		int64_t handle_id = handle->id;
+		duk_push_global_stash(ctx);
+		duk_get_prop_string(ctx, -1, "comoHandles");
+		duk_push_number(ctx, (double) handle_id);
+		duk_dup(ctx, 3);
+		duk_put_prop(ctx, -3); /* comoHandles[handle_id] = callback */
+		handle->cb = (void *)como__handle_dispatch_cb;
+	}
+
 	io_start(handle, fd, mask);
 	return 1;
 }
@@ -333,13 +356,13 @@ static const duk_function_list_entry loop_funcs[] = {
 	{"handle_unwrap",  como_loop_handle_unwrap, 1},
 
 	/* timer functions */
-	{"timer_start", como_loop_timer_start,      3},
+	{"timer_start", como_loop_timer_start,      4},
 	{"timer_stop", como_loop_timer_stop,        1},
 	{"timer_again", como_loop_timer_again,      1},
 	{"update_time", como_loop_update_time,      1},
 
 	/* io functions */
-	{"io_start",  como_loop_io_start,           3},
+	{"io_start",  como_loop_io_start,           4},
 	{"io_stop",   como_loop_io_stop,            2},
 	{"io_active", como_loop_io_active,          2},
 	{NULL, NULL,                                0}
