@@ -324,10 +324,10 @@ int loop_start (evLoop *loop, int type){
 		loop_update_time(loop);
 
 		int timeout;
-		if (type == 1){
-			timeout = 0;
-		} else {
-			timeout = next_timeout(loop);
+
+		timeout = next_timeout(loop);
+		if (type == 1 && timeout > 1){
+			timeout = 1;
 		}
 
 		loop_run_timers(loop);

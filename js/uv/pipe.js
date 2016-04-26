@@ -114,11 +114,6 @@ Pipe.prototype.connect = function(name, cb) {
 		this.fd = newSock;
 	}
 
-	// memset(&saddr, 0, sizeof saddr);
-	// strncpy(saddr.sun_path, name, sizeof(saddr.sun_path) - 1);
-	// saddr.sun_path[sizeof(saddr.sun_path) - 1] = '\0';
-	// saddr.sun_family = AF_UNIX;
-
 	var addr = pipe_map[name];
 	var err = 0;
 	var r;
@@ -136,31 +131,6 @@ Pipe.prototype.connect = function(name, cb) {
 	sock.connect(this.fd, addr);
 
 	this.delayed_error = err;
-
-	// do {
-	//     r = sock.connect(this.fd, addr);
-	// } while ( r === null && process.errno === errno.EINTR);
-
-
-
-	// if (!r && (process.errno !== errno.EINPROGRESS)) {
-	//     err = process.errno;
-	// } else {
-	//     if (new_sock) {
-	//         err = this.stream_open(this.fd, uv.STREAM_READABLE | uv.STREAM_WRITABLE);
-	//     }
-
-	//     if (err == 0) {
-	//         this.io_watcher.start(loop.POLLIN | loop.POLLOUT);
-	//     }
-	// }
-
-	// this.delayed_error = err;
-	// this.connect_req   = 1;
-	// if (cb) this.connect_req_cb = cb.bind(this);
-
-	// /* Force callback to run on next tick in case of error. */
-	// if (err) this.io_feed();
 	return 0;
 };
 

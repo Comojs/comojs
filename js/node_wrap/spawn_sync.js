@@ -1,46 +1,13 @@
-
 var process_wrap = process.binding('process_wrap').Process;
-var loop = process.binding('loop');
+var binding = process.binding('loop');
+var loop = require('loop').main;
 var child_process = require('child_process');
 
 
-// exports.spawn = function(options){
-// 	// save main event loop as we
-// 	// are going to use it again
-// 	var main_loop = process.main_loop;
-
-// 	// create new event loop
-// 	var new_loop = process.main_loop = loop.init();
-
-// 	// console.log(options);
-// 	var Process = new process_wrap();
-// 	Process.onexit = function tttest (){
-// 		print('XXXXXXXXXXXXXXXX');
-// 	};
-
-// 	var h = loop.handle_init(new_loop, function(){
-// 		print('XCC');
-// 	});
-
-// 	loop.timer_start(h, 100, 100);
-// 	Process.spawn(options);
-// 	loop.run(new_loop, 0);
-
-// 	// reset back to main loop
-// 	process.main_loop = main_loop;
-
-// 	// free new loop
-// 	loop.destroy(new_loop);
-
-// 	// child_process.spawn
-// 	// child_process.spawn(options.file, options.args, options);
-// };
-
-var iz = 9;
 exports.spawn = function(a,b,c){
 	// save main event loop as we
 	// are going to use it again
-	var main_loop = process.main_loop;
+	var main_loop = loop._handle;
 	var nextTick  = process.nextTick;
 
 	process.nextTick = function(){
@@ -49,8 +16,11 @@ exports.spawn = function(a,b,c){
 		callback.apply(null, args);
 	};
 
-	// create new event loop
-	var new_loop = process.main_loop = loop.init();
+	// create new event loop handle
+	// change main loop handle to this new
+	// loop handle, run then, reset back the original
+	// loop handle
+	loop._handle = binding.init();
 
 	var result = {
 		status : 0,
@@ -66,7 +36,7 @@ exports.spawn = function(a,b,c){
 	} catch (e){
 		e.syscall = e.syscall.replace('spawn', 'spawnSync');
 		result.error = e;
-		process.main_loop = main_loop;
+		loop._handle = main_loop;
 		process.nextTick = nextTick;
 		return result;
 	}
@@ -87,7 +57,7 @@ exports.spawn = function(a,b,c){
 		stderr.push(data);
 	});
 
-	loop.run(new_loop, 0);
+	loop.run(0);
 
 	if (stdout.length > 0){
 		result.output[1] = Buffer.concat(stdout);
@@ -98,10 +68,8 @@ exports.spawn = function(a,b,c){
 	}
 
 	// reset back to main loop
-	process.main_loop = main_loop;
+	loop._handle = main_loop;
 	process.nextTick = nextTick;
 
-	// free new loop
-	// loop.destroy(new_loop);
 	return result;
 };

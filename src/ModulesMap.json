@@ -25,6 +25,8 @@
 	"uv/tty/ansi"         : "js/uv/tty/ansi.js",
 	"uv/tty/linux"        : "js/uv/tty/linux.js",
 
+
+
 	"internal/util"       : "js/node/internal/util.js",
 	"internal/linkedlist" : "js/node/internal/linkedlist.js",
 	"buffer"              : "js/node/buffer.js",
@@ -66,7 +68,6 @@
 
 	"timer_wrap"          : "js/node_wrap/timer_wrap.js",
 	"buffer_wrap"         : "js/node_wrap/buffer_wrap.js",
-	"handle_wrap"         : "js/node_wrap/handle_wrap.js",
 	"tcp_wrap"            : "js/node_wrap/tcp_wrap.js",
 	"stream_wrap"         : "js/node_wrap/stream_wrap.js",
 	"pipe_wrap"           : "js/node_wrap/pipe_wrap.js",

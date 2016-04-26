@@ -2,7 +2,7 @@ var util   = require("util");
 var stream = require('uv/stream');
 var sock   = require('socket');
 var errno  = require('errno');
-var loop   = require('loop');
+var loop   = require('loop').main;
 var uv     = require('uv');
 var assert = require('assert');
 
@@ -129,5 +129,17 @@ TCP.prototype.connect = function(addr, cb){
 
 	return 0;
 };
+
+TCP.prototype.getpeername = function(){
+	var addr = sock.getpeername(this.fd);
+	if (addr === null) return process.errno;
+	var peerinfo = sock.addr_info(addr);
+	if (peerinfo === null) return process.errno;
+	return {
+		ip : peerinfo[0],
+		port : peerinfo[1]
+	};
+};
+
 
 module.exports = TCP;

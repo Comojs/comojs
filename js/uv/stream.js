@@ -1,5 +1,5 @@
 var sock   = require('socket');
-var loop   = require('loop');
+var loop   = require('loop').main;
 var errno  = require('errno');
 var uv     = require('uv');
 var assert = require('assert');
@@ -590,5 +590,14 @@ Stream.prototype.io_feed = function(){
 	}, 1);
 };
 
+
+Stream.prototype.ref = function(cb){
+	this.io_watcher.ref();
+};
+
+
+Stream.prototype.unref = function(cb){
+	this.io_watcher.unref();
+};
 
 module.exports = Stream;

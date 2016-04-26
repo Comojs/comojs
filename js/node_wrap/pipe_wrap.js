@@ -45,13 +45,13 @@ Pipe.prototype.open = function(fd){
 
 
 Pipe.prototype.unref = function(fd){
-	this._handle.io_watcher.unref();
+	this._handle.unref();
 	return 0;
 };
 
 
 Pipe.prototype.ref = function(fd){
-	this._handle.io_watcher.ref();
+	this._handle.ref();
 	return 0;
 };
 

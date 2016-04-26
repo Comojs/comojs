@@ -11,7 +11,7 @@ var pingpongs = [];
 
 uv.make_socketpair(fds, 1);
 
-var loop = require('loop');
+var loop = require('loop').main;
 
 count = 0;
 var handle = loop.io(function(){

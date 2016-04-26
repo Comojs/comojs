@@ -1,6 +1,6 @@
 var assert = require('assert');
 var loop = process.binding('loop');
-var main = process.main_loop;
+var main = loop.init();
 
 var result = [];
 
@@ -50,3 +50,5 @@ process.on('exit', function(){
 	assert.deepEqual(result, [1,3,2]);
 	console.log(result);
 });
+
+loop.run(main);

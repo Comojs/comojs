@@ -1,12 +1,18 @@
+// delete global uv if available
+// this required when we are compiling with
+// dukluv which exports uv as global object
+delete global.uv;
+
 var sock     = require('socket');
 var posix    = process.binding('posix');
+var loop     = require('loop').main;
 var errno    = require('errno');
 var assert   = require('assert');
 var syscall  = require('syscall');
 var SYS      = syscall.SYS;
 
 var C        = require('C');
-var constant  = require('constants');
+var constant = require('constants');
 
 var isWin   = process.platform === 'win32';
 
@@ -40,6 +46,39 @@ exports.PROCESS_WINDOWS_VERBATIM_ARGUMENTS = (1 << 2);
 exports.EOF = errno.EOF;
 
 exports.isWin = isWin;
+
+exports.new_timer = function(){
+	return loop.handle_init(loop._handle);
+};
+
+exports.unref = function(handle){
+	loop.handle_unref(handle);
+};
+
+exports.ref = function(handle){
+	loop.handle_ref(handle);
+};
+
+exports.run = function(type){
+	return loop.run(type);
+};
+
+exports.timer_start = function(handle, timeout, repeat, cb){
+	return loop.timer_start(handle, timeout, repeat, cb);
+};
+
+exports.timer_stop = function(handle, timeout, repeat, cb){
+	loop.timer_stop(handle);
+};
+
+exports.handle_close = function(handle){
+	return loop.handle_close(handle);
+};
+
+exports.update_time = function(handle){
+	return loop.update_time();
+};
+
 
 // create a socket with (domain, type, protocol) options
 // the created socket will be set to nonblocking mode

@@ -16,7 +16,7 @@ function TCP (){
 
 
 TCP.prototype.bind6 = TCP.prototype.bind = function(ip, port){
-	var addr = sock.pton(ip, port);
+	var addr = uv.ip_address(ip, port);
 	if (!addr){
 		return process.errno;
 	}
@@ -40,12 +40,10 @@ TCP.prototype.listen = function(backlog){
 	var tcp = this;
 	//pass onConnection callback
 	return this._handle.listen(backlog, function(status){
-		var client;
-		if (status === 0){
+		if (!status){
 			client = new TCP();
 			this.accept(client._handle);
 		}
-
 		MakeCallback(tcp, "onconnection", status, client);
 	});
 };
@@ -65,7 +63,6 @@ TCP.prototype.readStart = function(){
 
 		// nread == 0
 		else { return; }
-
 		MakeCallback(tcp, "onread", len, buf);
 	});
 };
@@ -99,6 +96,7 @@ TCP.prototype.writeBinaryString = function(req, data){
 	return this.writeUtf8String(req, data.toString("binary"));
 };
 
+
 TCP.prototype.writeAsciiString =
 TCP.prototype.writeBuffer =
 TCP.prototype.writeUtf8String = function(req, data){
@@ -115,14 +113,13 @@ TCP.prototype.writeUtf8String = function(req, data){
 
 TCP.prototype.connect = function(req_wrap_obj, ip_address, port){
 	var tcp = this;
-	var addr = uv.ip4_addr(ip_address, port);
+	var addr = uv.ip_address(ip_address, port);
 	if (addr === null){
 		return errno.translate(process.errno);
 	}
 
 	var err = this._handle.connect(addr, function AfterConnect (status){
 		MakeCallback(req_wrap_obj, "oncomplete", errno.translate(status), tcp, req_wrap_obj, true, true);
-		//req_wrap_obj.oncomplete(status, tcp, req_wrap_obj, true, true);
 	});
 	return errno.translate(err);
 };
@@ -142,26 +139,27 @@ TCP.prototype.getsockname = function(out){
 	}
 };
 
+
 TCP.prototype.getpeername = function(out){
-	var addr = sock.getpeername(this._handle.fd);
-	if (addr === null) return process.errno;
-	var peerinfo = sock.addr_info(addr);
-	if (peerinfo === null) return process.errno;
+	var peerinfo = this._handle.getpeername();
 	out.address = peerinfo[0];
 	out.port = peerinfo[1];
 	return 0;
 };
 
+
 TCP.prototype.setKeepAlive = function(){
 	// throw new Error('setKeepAlive');
 };
 
+
 TCP.prototype.unref = function(){
-	this._handle.io_watcher.unref();
+	this._handle.unref();
 	return 0;
 };
 
+
 TCP.prototype.ref = function(fd){
-	this._handle.io_watcher.ref();
+	this._handle.ref();
 	return 0;
 };

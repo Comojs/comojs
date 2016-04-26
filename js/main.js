@@ -135,7 +135,7 @@ if (typeof Number.isFinite !== 'function') {
 		startup.syscallAndUV();
 		startup.processKillAndExit();
 		startup.nextTick();
-		startup.processStdio();
+		// startup.processStdio();
 		startup.globalConsole();
 		startup.processChannel();
 
@@ -341,42 +341,41 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	startup.globalTimeouts = function() {
-		var loop = process.binding('loop');
-		var _default = loop.init();
-		process.main_loop = _default;
+
 
 		global.setTimeout = function(fn, timeout, a, b, c) {
-			var h = loop.handle_init(_default, fn);
+			var uv = NativeModule.require('uv');
+			var h = uv.new_timer();
 			fn.timerHandle = h;
-			loop.timer_start(h, timeout, 0);
+			fn.unref = function(){ uv.unref(h) };
+			uv.timer_start(h, timeout | 0, 0, fn);
 			return fn;
 		};
 
 		global.setInterval = function(fn, timeout) {
-			var h = loop.handle_init(process.main_loop, fn);
+			var uv = NativeModule.require('uv');
+			var h = uv.new_timer();
 			fn.timerHandle = h;
-			fn.unref = function(){
-				loop.handle_unref(h);
-			};
-			loop.timer_start(h, timeout, timeout);
+			fn.unref = function(){ uv.unref(h) };
+			uv.timer_start(h, timeout | 0, (timeout | 0) || 1, fn);
 			return fn;
 		};
 
 		global.setImmediate = function(fn, timeout) {
-			var h = loop.handle_init(process.main_loop, fn);
+			var uv = NativeModule.require('uv');
+			var h = uv.new_timer();
 			fn.timerHandle = h;
-			fn.unref = function(){
-				loop.handle_unref(h);
-			};
-			loop.timer_start(h, 1, 0);
+			fn.unref = function(){ uv.unref(h) };
+			uv.timer_start(h, 1, 0, fn);
 			return fn;
 		};
 
 		global.clearImmediate = global.clearTimeout = global.clearInterval = function(timer) {
+			var uv = NativeModule.require('uv');
 			if (!timer.timerHandle){
 				throw new Error("clearing Timer Error");
 			}
-			loop.handle_close(timer.timerHandle);
+			uv.handle_close(timer.timerHandle);
 			timer.timerHandle = null;
 		};
 	};
@@ -433,13 +432,12 @@ if (typeof Number.isFinite !== 'function') {
 	};
 
 	startup.loop = function(){
-		var main_loop = process.main_loop;
-		var loop = process.binding('loop');
-		var gcHandle = loop.handle_init(main_loop, function(){
+		var uv = NativeModule.require('uv');
+		var gcHandle = uv.new_timer();
+		uv.unref(gcHandle);
+		uv.timer_start(gcHandle, 5000, 5000, function(){
 			Duktape.gc();
 		});
-		loop.handle_unref(gcHandle);
-		loop.timer_start(gcHandle, 5000, 5000);
 
 		(function _starter(){
 			try {
@@ -447,10 +445,9 @@ if (typeof Number.isFinite !== 'function') {
 				var n = 0;
 				while(1){
 					process._tickCallback();
-					n = loop.run(main_loop, 1);
+					n = uv.run(1);
 					if (nextTickQueue.length) continue;
-					if (n == 0) break;
-					process.sleep(1);
+					if (n === 0) break;
 				}
 				process.emit('exit', 0);
 			} catch (e){
