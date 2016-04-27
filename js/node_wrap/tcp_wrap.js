@@ -142,8 +142,8 @@ TCP.prototype.getsockname = function(out){
 
 TCP.prototype.getpeername = function(out){
 	var peerinfo = this._handle.getpeername();
-	out.address = peerinfo[0];
-	out.port = peerinfo[1];
+	out.address = peerinfo.ip;
+	out.port = peerinfo.port;
 	return 0;
 };
 
