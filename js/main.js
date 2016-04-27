@@ -135,7 +135,7 @@ if (typeof Number.isFinite !== 'function') {
 		startup.syscallAndUV();
 		startup.processKillAndExit();
 		startup.nextTick();
-		// startup.processStdio();
+		startup.processStdio();
 		startup.globalConsole();
 		startup.processChannel();
 
