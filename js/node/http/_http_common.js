@@ -223,7 +223,7 @@ exports.httpSocketSetup = httpSocketSetup;
  * Verifies that the given val is a valid HTTP token
  * per the rules defined in RFC 7230
  **/
-var token = /^[a-zA-Z0-9_!#$%&'*+.^`|~-]+$/;
+var token = /^[a-zA-Z0-9_!#$%&'*+.^`|~\-]+$/;
 function checkIsHttpToken(val) {
   return typeof val === 'string' && token.test(val);
 }
