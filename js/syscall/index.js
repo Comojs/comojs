@@ -19,7 +19,7 @@ var littleEndian = (function() {
 	return new Int16Array(buffer)[0] === 256; // Int16Array uses the platform's endianness.
 })();
 
-var rr     = new Buffer(8);
+var rr     = new ArrayBuffer(8);
 var retVal = new DataView(rr, 0);
 
 // syscall.LoadLibrary Constructor

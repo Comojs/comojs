@@ -22,6 +22,8 @@ const char *como_main_js =
 
 extern char **environ;
 
+#include "print-alert/duk_print_alert.c"
+
 /* ALL Bindings ar directly included from main.h */
 static const duk_function_list_entry bindings_funcs[] = {
 	{ "constants"   , init_system_constants,   0},
@@ -117,37 +119,44 @@ COMO_METHOD(como_process_stat) {
   * process.readFile(filename);
 **************************************************************************/
 COMO_METHOD(como_process_readFile) {
-	const char *filename = duk_get_string(ctx, 0);
+	const char *path = duk_get_string(ctx, 0);
 	FILE *f = NULL;
-	size_t len;
-	void *buf;
-	size_t got;
-	if (!filename) {
-		goto error;
+	char *buf;
+	long sz;  /* ANSI C typing */
+
+	if (!path) {
+		goto fail;
 	}
-
-	f = fopen(filename, "rb");
-	if (!f) goto error;
-
-	if (fseek(f, 0, SEEK_END) != 0) goto error;
-
-	len = ftell(f);
-	if (fseek(f, 0, SEEK_SET) != 0) goto error;
-
-	buf = duk_push_fixed_buffer(ctx, len);
-	got = fread(buf, 1, len, f);
-	if (got != len) goto error;
-	duk_to_string(ctx, -1);
-	fclose(f);
-	f = NULL;
+	f = fopen(path, "rb");
+	if (!f) {
+		goto fail;
+	}
+	if (fseek(f, 0, SEEK_END) < 0) {
+		goto fail;
+	}
+	sz = ftell(f);
+	if (sz < 0) {
+		goto fail;
+	}
+	if (fseek(f, 0, SEEK_SET) < 0) {
+		goto fail;
+	}
+	buf = (char *) duk_push_fixed_buffer(ctx, (duk_size_t) sz);
+	if ((size_t) fread(buf, 1, (size_t) sz, f) != (size_t) sz) {
+		duk_pop(ctx);
+		goto fail;
+	}
+	(void) fclose(f);  /* ignore fclose() error */
+	duk_buffer_to_string(ctx, -1);
 	return 1;
 
-	error:
+ 	fail:
 		if (f) {
-			fclose(f);
+			(void) fclose(f);  /* ignore fclose() error */
 		}
 
-	return DUK_RET_ERROR;
+		duk_error(ctx, DUK_ERR_TYPE_ERROR, "read file error");
+		return DUK_RET_ERROR;
 }
 
 /**
@@ -322,10 +331,25 @@ void como_init_process(int argc, char *argv[], duk_context *ctx) {
 
 duk_context *como_create_new_heap (int argc, char *argv[], void *error_handle) {
 	duk_context *ctx = duk_create_heap(NULL, NULL, NULL, NULL, error_handle);
+	duk_print_alert_init(ctx, 0);
 	como_init_process(argc, argv, ctx);
 	return ctx;
 }
 
+duk_int_t duk_peval_file(duk_context *ctx, const char *path) {
+	duk_int_t rc;
+
+	duk_push_string(ctx, path);
+	como_process_readFile(ctx);
+	duk_push_string(ctx, path);
+	rc = duk_pcompile(ctx, DUK_COMPILE_EVAL);
+	if (rc != 0) {
+		return rc;
+	}
+	duk_push_global_object(ctx);  /* 'this' binding */
+	rc = duk_pcall_method(ctx, 0);
+	return rc;
+}
 
 void como_run (duk_context *ctx){
 	#ifdef COMO_LOCAL_JS
