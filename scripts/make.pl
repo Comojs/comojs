@@ -49,7 +49,7 @@ if (!$compileOptions{'-DCOMO_NO_TLS'}){
 
 my $build = join ' ', @files;
 
-my $buildStr = "$cc -Wall -Werror -Wno-missing-braces -Wno-trigraphs"
+my $buildStr = "$cc -Wall -Werror -Wno-missing-braces -Wno-trigraphs -Wno-unused-value"
 			 . " -I./libs"
 			 . " -I./libs/mbedtls/library"
 			 . " -L."
