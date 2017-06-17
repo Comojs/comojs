@@ -5,7 +5,10 @@ use File::Spec;
 use Data::Dumper;
 my $isWin = $^O =~ /win32/i;
 
-my $command = $isWin ? 'como ' : './como ';
+my $start = time();
+
+my $command = $isWin ? 'como ' : (-f './como') ? './como ' : './como.sh ';
+
 my @tests;
 my @errors;
 
@@ -60,13 +63,14 @@ for my $test (@tests){
 
 #close echo server
 system($command . "tests/uv/echo-server.js --close");
+my $elapsed = time() - $start;
 
-print "Done Testing " . scalar @tests . " files \n";
+print "Done Testing " . scalar @tests . " files in $elapsed seconds\n";
 
 if (@errors > 0){
 	print "With " . scalar @errors . " Error\n";
 	foreach my $err ( @errors ){
-		print "\t .." . $err . "\n";
+		print "\t " . $err . "\n";
 	}
 	exit(1);
 } else {
