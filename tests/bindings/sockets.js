@@ -83,10 +83,9 @@ var gPORT = 9090;
 
 	//setting unknown protocol
 	//should fail EPROTONOSUPPORT
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 999);
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 90);
 	assert.ok(s === null);
 	assert.equal(process.errno, errno.EPROTONOSUPPORT);
-
 })();
 
 //bind
