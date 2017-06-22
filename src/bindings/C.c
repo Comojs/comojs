@@ -156,8 +156,8 @@ COMO_METHOD(como_c_buffer) {
 	type = duk_get_type(ctx, 3);
 	if (type == DUK_TYPE_UNDEFINED){
 		duk_pop(ctx);
-		duk_eval_string(ctx, "DataView");
-		duk_insert(ctx, 0); // stack [DataView .. Buffer .. offset .. size]
+		duk_eval_string(ctx, "Uint8Array");
+		duk_insert(ctx, 0); // stack [Uint8Array .. Buffer .. offset .. size]
 		duk_pnew(ctx, 3);
 		return 1;
 	}

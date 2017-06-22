@@ -11,7 +11,7 @@ module.exports = (function(platform){
 	  var Timespec                                   // STRUCT //
 	//===========================================================
 	= exports.Timespec
-	= C.Struct.create({
+	= C.struct({
 		Sec  : 'int32',
 		Nsec : 'int32'
 	});
@@ -20,7 +20,7 @@ module.exports = (function(platform){
 	  var Stat_t                                     // STRUCT //
 	//===========================================================
 	= exports.Stat_t
-	= C.Struct.create({
+	= C.struct({
 		Dev       : 'uint64',
 		X__pad1   : 'uint16',
 		Pad_cgo_0 : 2, //2 bytes buffer padding
@@ -45,7 +45,7 @@ module.exports = (function(platform){
 	  var WinSize                                    // STRUCT //
 	//===========================================================
 	= exports.WinSize
-	= C.Struct.create({
+	= C.struct({
 		ws_row    : 'uint16',
 		ws_col    : 'uint16',
 		ws_xpixel : 'uint16',
@@ -131,7 +131,7 @@ module.exports = (function(platform){
 
 	// return a pair of pipes, null on error
 	//===========================================================
-	  var pairs = new C.Struct.create({ f : 'int', s : 'int' })();
+	  var pairs = new C.struct({ f : 'int', s : 'int' })();
 	  exports.pipe = function(){
 	//===========================================================
 		if (pipe(pairs) === null) return null;

@@ -36,19 +36,19 @@ var kernel  = syscall.LoadLibrary('kernel32');
 
 var WORD = 'uint16';
 
-var COORD = C.Struct.create({
+var COORD = C.struct({
 	X : 'int16',
 	Y : 'int16'
 });
 
-var SMALL_RECT = C.Struct.create({
+var SMALL_RECT = C.struct({
 	Left   : 'int16',
 	Top    : 'int16',
 	Right  : 'int16',
 	Bottom : 'int16'
 });
 
-var CONSOLE_SCREEN_BUFFER_INFO = C.Struct.create({
+var CONSOLE_SCREEN_BUFFER_INFO = C.struct({
 	dwSize              : COORD,
 	dwCursorPosition    : COORD,
 	wAttributes         : WORD,
@@ -57,7 +57,7 @@ var CONSOLE_SCREEN_BUFFER_INFO = C.Struct.create({
 });
 
 
-var CHAR_INFO = C.Struct.create({
+var CHAR_INFO = C.struct({
 	UnicodeChar : 2, //size of WCHAR!!
 	Attributes  : WORD
 });

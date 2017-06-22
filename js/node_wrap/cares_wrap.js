@@ -41,7 +41,6 @@ exports.getaddrinfo = function(req, hostname, family, flags){
 			result = info.ai_next;
 			if (info.ai_family === syscall.AF_INET){
 				var addr = new C.Struct.sockaddr(info.ai_addr);
-				var a    = addr.buffer.sin_addr;
 				var ipv4 = sock.ntop(addr.pointer);
 				addrs.push(ipv4);
 			}
