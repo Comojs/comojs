@@ -62,7 +62,7 @@ my $buildStr = "$cc -Wall -Werror -Wno-missing-braces -Wno-trigraphs -Wno-unused
 			if (isWin()){
 				$buildStr .= " -lws2_32";
 			} else {
-				$buildStr .= " -lrt -lpthread -lm -ldl";
+				$buildStr .= " -lpthread -lm -ldl";
 			}
 
 system($buildStr) && die $!;

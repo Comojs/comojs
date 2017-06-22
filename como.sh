@@ -9,4 +9,4 @@ tcc -Wall \
  "src/loop/core.c" \
  "libs/thread/tinycthread.c" \
  "libs/http/http_parser.c" \
- "-run -lrt -lduktape -lmbedtls -lpthread" src/main.c $*
+ "-run -lduktape -lmbedtls -lpthread" src/main.c $*
