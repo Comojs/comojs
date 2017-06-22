@@ -31,8 +31,7 @@ if (!$ARGV[0] || $testFolder =~ /uv/){
 	die "can't fork echo server" if $pid == -1;
 	if ($pid == 0){
 		my $ret = system($command . "tests/uv/echo-server.js");
-		print $ret, "\n";
-		exit(0);
+		exit($ret);
 	}
 }
 

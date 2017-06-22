@@ -8,7 +8,7 @@ var serverType;
 var server_closed;
 
 function on_server_close (){
-
+	console.log('closing server');
 }
 
 function on_close (){
