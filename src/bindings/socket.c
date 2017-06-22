@@ -571,7 +571,7 @@ COMO_METHOD(como_sock_recv) {
 		assert(0 && "can't allocate memory for recieveing data");
 	}
 
-	size_t nread;
+	ssize_t nread;
 	do {
 		nread = recv(fd, buf, len, flags);
 	} while (nread < 0 && COMO_GET_LAST_WSA_ERROR == SOCKEINTR);
@@ -604,7 +604,7 @@ COMO_METHOD(como_sock_read) {
 		assert(0 && "can't allocate memory for recieveing data");
 	}
 
-	size_t nread;
+	ssize_t nread;
 	do {
 		nread = read(fd, buf, len);
 	} while (nread < 0 && COMO_GET_LAST_WSA_ERROR == SOCKEINTR);
@@ -631,7 +631,9 @@ COMO_METHOD(como_sock_read) {
  ============================================================================*/
 COMO_METHOD(como_sock_readIntoBuffer) {
 	SOCKET fd  = duk_require_int(ctx, 0);
-	size_t len, nread;
+	size_t  len;
+	ssize_t nread;
+
 	char *buf = duk_require_buffer_data(ctx, 1, &len);
 	int flags  = duk_get_int(ctx, 2); /* default to zero */
 
