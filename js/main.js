@@ -60,6 +60,10 @@ if (typeof Number.isFinite !== 'function') {
 (function(process){
 	'use strict';
 
+	if (process.platform === 'windows'){
+		process.platform = 'win32';
+	}
+
 	process.execArgv = [];
 
 	process.throwErrno = function(errno){

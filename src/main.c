@@ -279,8 +279,11 @@ void como_init_process(int argc, char *argv[], duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "pid");
 
 	/* process platform*/
-	duk_push_string(ctx, PLATFORM);
+	duk_push_string(ctx, DUK_USE_OS_STRING);
 	duk_put_prop_string(ctx, -2, "platform");
+
+	duk_push_string(ctx, DUK_USE_ARCH_STRING);
+	duk_put_prop_string(ctx, -2, "arch");
 
 	#ifndef COMO_LOCAL_JS
 		duk_push_string(ctx, como_native_modules);
