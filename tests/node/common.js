@@ -192,3 +192,9 @@ exports.indirectInstanceOf = function(obj, cls) {
   var objChain = protoCtrChain(obj);
   return objChain.slice(-clsChain.length) === clsChain;
 };
+
+exports.mustNotCall = function(msg) {
+  return function mustNotCall() {
+    assert.fail(msg || 'function should not have been called');
+  };
+};
