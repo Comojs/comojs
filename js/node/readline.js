@@ -6,6 +6,9 @@
 
 'use strict';
 
+const util = require('util');
+const debug = util.debuglog('readline');
+
 /*! https://mths.be/codepointat v0.2.0 by @mathias */
 if (!String.prototype.codePointAt) {
   (function() {
