@@ -23,8 +23,8 @@ if (!-f $duksource){
 
 print Dumper $duksource;
 
-system( $cc . ' -c ' . $duksource) && die $!;
-system( $cc . ' -shared -fIPC duktape.o -o ' . $dll) && die $!;
+system( $cc . ' -c -fPIC ' . $duksource) && die $!;
+system( $cc . ' -shared duktape.o -o ' . $dll) && die $!;
 
 unlink 'duktape.o';
 

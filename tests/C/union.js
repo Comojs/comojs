@@ -26,21 +26,21 @@ assert.strictEqual(Buffer(union).toString(), str.slice(0, 20));
 
 // union in structs
 
-var child = C.Struct.create({
+var child = C.struct({
 	num1 : 'uint32',
 	buf  : 5,
 	num2 : 'uint32'
 });
 
-var PARENT = C.Struct.create({
-	pad : 2,
+var PARENT = C.struct({
+	pad1 : 2,
 	unTest : C.union({
 		num1 : 'uint32',
 		buf  : 20, // largest size
 		num2 : 'uint32',
 		child : child
 	}),
-	test : 2
+	pad2 : 2
 });
 
 var parent = new PARENT();
@@ -56,5 +56,10 @@ assert.strictEqual(parent.unTest.num2, 8);
 
 parent.unTest.buf = str;
 
+// union
 assert.strictEqual(Buffer(parent.unTest.buf).toString(), str.slice(0, 20));
+assert.strictEqual(Buffer(parent.unTest).toString(), str.slice(0, 20));
+
+// struct
 assert.strictEqual(Buffer(parent.unTest.child.buf).toString(), str.slice(0, 5));
+assert.strictEqual(Buffer(parent.unTest.child).toString(), str.slice(0, 13));

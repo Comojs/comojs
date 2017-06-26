@@ -3,3 +3,11 @@ language: c
 script:
   - "perl ./scripts/make.pl -Dcomo_no_tls"
   - "perl test.pl"
+
+os:
+  - linux
+  - osx
+
+matrix:
+  allow_failures:
+    - os: osx

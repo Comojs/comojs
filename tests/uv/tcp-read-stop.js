@@ -3,7 +3,7 @@ var errno  = process.binding('errno');
 var sock   = process.binding('socket');
 var ASSERT = require('assert');
 
-var TEST_PORT = 8080;
+var TEST_PORT = 9095;
 
 function fail_cb() {
 	ASSERT(0, "fail_cb called");

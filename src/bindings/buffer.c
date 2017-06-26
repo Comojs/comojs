@@ -1,6 +1,4 @@
 
-#define EXTERN_APEX 0xFBEE9
-
 static const unsigned int kMaxLength =
 	sizeof(duk_int32_t) == sizeof(duk_intptr_t) ? 0x3fffffff : 0x7fffffff;
 
@@ -216,11 +214,11 @@ COMO_METHOD(como_buffer_compare) {
   if (end < start) end = start;                                             \
   CHECK_NOT_OOB(end <= end_max);                                            \
   size_t length = end - start;                                              \
-  if (length > kStringMaxLength) { duk_push_undefined(ctx); return 1; }         \
+  if (length > kStringMaxLength) { duk_push_undefined(ctx); return 1; }     \
   src += start;                                                             \
   if (length == 0) { duk_push_string(ctx, ""); return 1; }
 
-#define COMO_SLICE_END duk_to_string(ctx, -1);
+#define COMO_SLICE_END duk_buffer_to_string(ctx, -1);
 
 COMO_METHOD(como_buffer_base64_slice) {
 	COMO_SLICE_START

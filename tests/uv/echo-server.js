@@ -3,12 +3,12 @@ var errno  = require('errno');
 var sock   = require('socket');
 var ASSERT = require('assert');
 
-var port = 8080;
+var port = 9095;
 var serverType;
 var server_closed;
 
 function on_server_close (){
-
+	console.log('closing server');
 }
 
 function on_close (){

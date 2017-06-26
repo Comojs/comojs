@@ -2,7 +2,7 @@ var uv = require('uv');
 var socket = require('socket');
 var assert = require('assert');
 var errno = require('errno');
-var TEST_PORT = 8080;
+var TEST_PORT = 9095;
 
 var connect_cb_called = 0;
 var write_cb_called = 0;

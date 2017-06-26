@@ -19,18 +19,18 @@ var UINT   = 'uint32';
 var BOOL   = 'int';
 
 
-var COORD = C.Struct.create({
+var COORD = C.struct({
 	X : 'int16',
 	Y : 'int16'
 });
 
 
-var FOCUS_EVENT_RECORD = C.Struct.create({
+var FOCUS_EVENT_RECORD = C.struct({
 	bSetFocus : BOOL
 });
 
 
-var MOUSE_EVENT_RECORD =  C.Struct.create({
+var MOUSE_EVENT_RECORD =  C.struct({
 	dwMousePosition   : COORD,
 	dwButtonState     : DWORD,
 	dwControlKeyState : DWORD,
@@ -38,17 +38,17 @@ var MOUSE_EVENT_RECORD =  C.Struct.create({
 });
 
 
-var WINDOW_BUFFER_SIZE_RECORD =  C.Struct.create({
+var WINDOW_BUFFER_SIZE_RECORD =  C.struct({
 	dwSize : COORD
 });
 
 
-var MENU_EVENT_RECORD = C.Struct.create({
+var MENU_EVENT_RECORD = C.struct({
 	dwCommandId : UINT
 });
 
 
-var KEY_EVENT_RECORD = C.Struct.create({
+var KEY_EVENT_RECORD = C.struct({
 	bKeyDown : BOOL,
 	wRepeatCount : WORD,
 	wVirtualKeyCode : WORD,
@@ -61,7 +61,7 @@ var KEY_EVENT_RECORD = C.Struct.create({
 });
 
 
-var INPUT_RECORD = C.Struct.create({
+var INPUT_RECORD = C.struct({
 	EventType : WORD,
 	__pad : 2, // FIXME : padding on x64!!
 	Event : C.union ({

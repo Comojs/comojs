@@ -156,7 +156,7 @@ module.exports = (function(platform){
 		var Overlapped                               // STRUCT //
 	//===========================================================
 	= exports.Overlapped
-	= C.Struct.create({
+	= C.struct({
 		Internal     : ULONG,
 		InternalHigh : ULONG,
 		Offset       : 'uint32',
@@ -169,7 +169,7 @@ module.exports = (function(platform){
 		var Filetime                                 // STRUCT //
 	//===========================================================
 	= exports.Filetime
-	= C.Struct.create({
+	= C.struct({
 		LowDateTime  : DWORD,
 		HighDateTime : DWORD
 	});
@@ -179,7 +179,7 @@ module.exports = (function(platform){
 		var ByHandleFileInformation                  // STRUCT //
 	//===========================================================
 	= exports.ByHandleFileInformation
-	= C.Struct.create({
+	= C.struct({
 		FileAttributes      : DWORD,
 		CreationTime        : exports.Filetime,
 		LastAccessTime      : exports.Filetime,
@@ -197,7 +197,7 @@ module.exports = (function(platform){
 		var Win32FileAttributeData                   // STRUCT //
 	//===========================================================
 	= exports.Win32FileAttributeData
-	= C.Struct.create({
+	= C.struct({
 		FileAttributes : 'uint32',
 		CreationTime   : exports.Filetime,
 		LastAccessTime : exports.Filetime,
@@ -211,7 +211,7 @@ module.exports = (function(platform){
 		var SystemTime                               // STRUCT //
 	//===========================================================
 	= exports.SystemTime
-	= C.Struct.create({
+	= C.struct({
 		Year         : WORD,
 		Month        : WORD,
 		DayOfWeek    : WORD,
@@ -226,7 +226,7 @@ module.exports = (function(platform){
 		var SecurityAttributes                       // STRUCT //
 	//===========================================================
 	= exports.SecurityAttributes
-	= C.Struct.create ({
+	= C.struct ({
 		Length             : 'uint32',
 		SecurityDescriptor : 'uint32',
 		InheritHandle      : 'uint32'
@@ -237,7 +237,7 @@ module.exports = (function(platform){
 		var StartupInfo                              // STRUCT //
 	//===========================================================
 	= exports.StartupInfo
-	= C.Struct.create({
+	= C.struct({
 		Cb            : 'uint32',
 		Reserved1     : '*',
 		Desktop       : '*',
@@ -262,7 +262,7 @@ module.exports = (function(platform){
 		var ProcessInformation                       // STRUCT //
 	//===========================================================
 	= exports.ProcessInformation
-	= C.Struct.create({
+	= C.struct({
 		Process   : HANDLE,
 		Thread    : HANDLE,
 		ProcessId : 'uint32',

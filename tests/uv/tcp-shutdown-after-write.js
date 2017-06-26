@@ -1,6 +1,6 @@
 var uv = require('uv');
 var ASSERT = require('assert');
-var TEST_PORT = 8080;
+var TEST_PORT = 9095;
 
 var conn;
 var timer;

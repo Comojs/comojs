@@ -1,7 +1,7 @@
 var C      = require('C');
 var assert = require('assert');
 
-var struct = C.Struct.create({
+var struct = C.struct({
 	Num  : 'int32',
 	Buf  : 12,
 	Num2 : 'int'
@@ -17,7 +17,7 @@ t.Num = -10;
 t.Num2 = C.sizeOf.INT_MAX + 100;
 
 
-assert.strictEqual(Buffer(t.buffer.Buf).toString(), string);
+assert.strictEqual(Buffer(t.Buf).toString(), string);
 
 t.Buf[0] = 97;
 t.Buf[11] = 97;

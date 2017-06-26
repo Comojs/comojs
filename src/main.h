@@ -113,23 +113,4 @@ void dump_stack(duk_context *ctx, const char *name) {
 #include "bindings/errno.c"
 #include "bindings/http-parser.c"
 
-#ifdef _WIN32
-	#define PLATFORM "win32"
-#elif __APPLE__
-	#if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
-		// define something for simulator
-	#elif TARGET_OS_IPHONE
-		// define something for iphone
-	#else
-		#define TARGET_OS_OSX 1
-		// define something for OSX
-	#endif
-#elif __linux
-	 #define PLATFORM "linux"
-#elif __unix // all unices not caught above
-	 #define PLATFORM "unix"
-#elif __posix
-	#define PLATFORM "posix"
-#endif
-
 #endif /*_COMO_CORE_H*/

@@ -3,7 +3,7 @@ var errno  = process.binding('errno');
 var sock   = process.binding('socket');
 var assert = require('assert');
 
-var TEST_PORT = 8080;
+var TEST_PORT = 9095;
 
 var shutdown_cb_called = 0;
 var connect_cb_called = 0;
@@ -30,7 +30,6 @@ function close_cb (){
 }
 
 function read_cb (err, buf){
-	print("aaaaaaaa");
 	if (!err) {
 		assert(buf.length === 4);
 		assert.strictEqual(buf, "PING");

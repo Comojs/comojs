@@ -30,8 +30,10 @@ while (my $file = readdir(DIR)) {
     my $object = $file;
     $object = getFile( $mbedFolder . 'build/' . $object);
 
+    print $object, "\n";
+
     $object =~ s/\.c/\.o/;
-    system('gcc -Wall -c ' . $f . ' -o ' . $object) && die $!;
+    system('gcc -Wall -c -fPIC ' . $f . ' -o ' . $object) && die $!;
     push @objects, $object;
 }
 

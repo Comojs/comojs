@@ -6,6 +6,9 @@
 
 'use strict';
 
+const util = require('util');
+const debug = util.debuglog('readline');
+
 /*! https://mths.be/codepointat v0.2.0 by @mathias */
 if (!String.prototype.codePointAt) {
   (function() {
@@ -421,12 +424,12 @@ Interface.prototype._tabComplete = function() {
     self.resume();
 
     if (err) {
-      // XXX Log it somewhere?
+      debug('tab completion error %j', err);
       return;
     }
 
-    var completions = rv[0],
-        completeOn = rv[1];  // the text that was completed
+    const completions = rv[0];
+    const completeOn = rv[1];  // the text that was completed
     if (completions && completions.length) {
       // Apply/show completions.
       if (completions.length === 1) {
@@ -436,7 +439,10 @@ Interface.prototype._tabComplete = function() {
         var width = completions.reduce(function(a, b) {
           return a.length > b.length ? a : b;
         }).length + 2;  // 2 space padding
-        var maxColumns = Math.floor(self.columns / width) || 1;
+        var maxColumns = Math.floor(self.columns / width);
+        if (!maxColumns || maxColumns === Infinity) {
+          maxColumns = 1;
+        }
         var group = [], c;
         for (var i = 0, compLen = completions.length; i < compLen; i++) {
           c = completions[i];

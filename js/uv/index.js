@@ -443,7 +443,7 @@ if (isWin){
 // windows recvmsg & sendmsg emulation
 // this should be moved to a seperate platform
 // file ** TODO
-var protobuf = C.Struct.create({
+var protobuf = C.struct({
 	start  : 'uint16',
 	target : 'uint32',
 	pid    : 'uint32',

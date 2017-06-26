@@ -72,3 +72,4 @@ node modules
 - [x] tty
 - [x] http
 - [ ] https
+- [X] readline

@@ -33,7 +33,7 @@ const TCSAFLUSH = 2;
 var orig_termios_fd = -1;
 var orig_termios;
 
-var termios = C.Struct.create({
+var termios = C.struct({
 	c_iflag    : 'uint',
 	c_oflag    : 'uint',
 	c_cflag    : 'uint',
